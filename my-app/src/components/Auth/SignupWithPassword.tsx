@@ -13,7 +13,7 @@ export default function SignupWithPassword() {
     cin: "",
     nom: "",
     prenom: "",
-    telephone: "+216 ",
+    telephone: "+216",
     email: "",
     image: null as File | null,
     dateDelivrance: "",
@@ -38,6 +38,10 @@ export default function SignupWithPassword() {
   };
 
   const validateTelephone = (telephone: string) => {
+    // Allow empty telephone or valid format
+    if (!telephone || telephone.trim() === '') {
+      return true; // Optional field
+    }
     const phoneRegex = /^\+216\d{8}$/;
     return phoneRegex.test(telephone);
   };
@@ -131,10 +135,15 @@ export default function SignupWithPassword() {
       // Special handling for telephone to maintain +216 prefix
       let newValue = value;
       if (name === 'telephone') {
-        if (!value.startsWith('+216')) {
+        // Remove any non-digit characters except the + at the beginning
+        const cleaned = value.replace(/[^\d+]/g, '');
+        
+        if (!cleaned.startsWith('+216')) {
           newValue = '+216';
-        } else if (value.length > 12) {
-          newValue = value.slice(0, 12);
+        } else if (cleaned.length > 12) {
+          newValue = cleaned.slice(0, 12);
+        } else {
+          newValue = cleaned;
         }
       }
       
@@ -170,11 +179,12 @@ export default function SignupWithPassword() {
           data.civilite && 
           data.nationalite && 
           validateEmail(data.email) && 
+          (data.telephone === '' || validateTelephone(data.telephone)) &&
           data.dateNaissance.trim() && 
           data.gouvernorat && 
           validatePassword(data.password) && 
           data.confirmPassword === data.password &&
-          !errors.email && !errors.password && !errors.confirmPassword && !errors.dateNaissance
+          !errors.email && !errors.telephone && !errors.password && !errors.confirmPassword && !errors.dateNaissance
         );
       case 3:
         return data.specialite && data.terms;
@@ -195,15 +205,38 @@ export default function SignupWithPassword() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (validateStep(3)) {
       setLoading(true);
-      setTimeout(() => {
+      alert("🔄 Création de votre compte en cours...");
+      try {
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Erreur lors de la création du compte');
+        }
+
+        console.log("Compte créé avec succès:", result);
+        // Show success message and redirect
+        alert("🎉 Votre inscription a été complétée avec succès! Vous pouvez maintenant vous connecter.");
+        window.location.href = '/Auth/Signin';
+      } catch (error) {
+        console.error("Erreur:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la création du compte';
+        alert(`❌ ${errorMessage}`);
+      } finally {
         setLoading(false);
-        console.log("Form submitted:", data);
-      }, 1000);
+      }
     }
   };
 
@@ -374,21 +407,39 @@ export default function SignupWithPassword() {
           {renderError('email')}
         </div>
         <div>
+          <InputGroup
+            type="tel"
+            label="Téléphone"
+            placeholder="+216 12345678"
+            name="telephone"
+            handleChange={handleChange}
+            value={data.telephone}
+            className="[&_input]:py-[15px]"
+          />
+          {renderError('telephone')}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
           <label className="block text-body-sm font-medium text-dark dark:text-white mb-3">
             Date de naissance
           </label>
           <DatePickerOne name="dateNaissance" value={data.dateNaissance} onChange={handleChange} />
           {renderError('dateNaissance')}
         </div>
+        <div>
+          <Select
+            label="Gouvernorat"
+            items={gouvernoratOptions}
+            placeholder="Sélectionner gouvernorat"
+            value={data.gouvernorat}
+            onChange={(value) => handleSelectChange('gouvernorat', value)}
+          />
+        </div>
       </div>
 
-      <Select
-        label="Gouvernorat"
-        items={gouvernoratOptions}
-        placeholder="Sélectionner gouvernorat"
-        value={data.gouvernorat}
-        onChange={(value) => handleSelectChange('gouvernorat', value)}
-      />
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
