@@ -96,12 +96,36 @@ export default function WelcomePage() {
               </>
             )}
             {session.user?.role === 'ENSEIGNANT' && (
-              <button
-                onClick={() => router.push("/calendar")}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                📅 Accéder au Calendrier
-              </button>
+              <>
+                <button
+                  onClick={() => router.push("/calendar")}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  📅 Accéder au Calendrier
+                </button>
+                <button
+                  onClick={() => router.push("/calendar/manage")}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  ⏰ Gérer disponibilités
+                </button>
+              </>
+            )}
+            {session.user?.role === 'CANDIDAT' && (
+              <>
+                <button
+                  onClick={() => router.push("/interviews")}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  🎯 Réserver entretien
+                </button>
+                <button
+                  onClick={() => router.push("/calendar/candidate")}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  📅 Voir le calendrier
+                </button>
+              </>
             )}
           </div>
         </div>
