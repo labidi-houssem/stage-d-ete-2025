@@ -28,8 +28,12 @@ export default function InterviewsPage() {
   useEffect(() => {
     if (status === "loading") return;
     
-    if (!session || session.user?.role !== "CANDIDAT") {
+    if (!session) {
       router.push("/welcome");
+      return;
+    }
+    if (session.user?.role === "CANDIDAT") {
+      router.push("/calendar/candidate");
       return;
     }
 

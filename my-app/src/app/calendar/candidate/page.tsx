@@ -3,66 +3,56 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 
-interface Disponibilite {
-  id: string;
-  dateDebut: string;
-  dateFin: string;
-  id_Enseignant: string;
-  enseignant: {
-    id: string;
-    nom: string;
-    prenom: string;
-    specialite: string;
-  };
-  reservations: {
-    id: string;
-    status: "EN_ATTENTE" | "CONFIRMEE" | "ANNULEE";
-    id_Candidat: string;
-  }[];
-}
-
 export default function CandidateCalendar() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [disponibilites, setDisponibilites] = useState<Disponibilite[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [selectedSlots, setSelectedSlots] = useState<Disponibilite[]>([]);
+  const [selectedHour, setSelectedHour] = useState<string>("09:00");
   const [modalOpen, setModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  // Reservation management
+  const [manageModalOpen, setManageModalOpen] = useState(false);
+  const [myReservations, setMyReservations] = useState<any[]>([]);
+  const [loadingReservations, setLoadingReservations] = useState(false);
+  // For calendar dots
+  const [activeReservations, setActiveReservations] = useState<any[]>([]);
+  const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
+  // For update modal
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [reservationToUpdate, setReservationToUpdate] = useState<any | null>(null);
+  const [updateDate, setUpdateDate] = useState<Date | null>(null);
+  const [updateHour, setUpdateHour] = useState<string>("09:00");
+  const [updating, setUpdating] = useState(false);
+  // For accepting results
+  const [acceptingResult, setAcceptingResult] = useState(false);
 
-  // Check if user is Candidat
   useEffect(() => {
     if (status === "loading") return;
-    
     if (!session) {
       router.push("/Auth/Signin");
       return;
     }
-
-    if (session.user.role !== "Candidat") {
+    // Type guard for user role
+    const userHasRole = (user: any): user is { role: string } => !!user && typeof user.role === 'string';
+    if (!userHasRole(session.user) || session.user.role !== "CANDIDAT") {
       router.push("/welcome");
       return;
     }
-
-    fetchDisponibilites();
+    // Fetch active reservations for calendar dots
+    fetchActiveReservations();
   }, [session, status, router]);
 
-  const fetchDisponibilites = async () => {
+  const fetchActiveReservations = async () => {
     try {
-      console.log("Fetching disponibilites...");
-      const response = await fetch("/api/disponibilite/public");
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Disponibilites loaded:", data);
-        setDisponibilites(data);
-      } else {
-        console.error("Erreur API:", response.status);
+      const res = await fetch("/api/reservation?mine=1");
+      if (res.ok) {
+        const data = await res.json();
+        // Only keep EN_ATTENTE or CONFIRMEE
+        setActiveReservations((data.reservations || []).filter((r: any) => ["EN_ATTENTE", "CONFIRMEE"].includes(r.status)));
       }
-    } catch (error) {
-      console.error("Erreur lors du chargement des disponibilités:", error);
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      setActiveReservations([]);
     }
   };
 
@@ -73,128 +63,60 @@ export default function CandidateCalendar() {
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
-
     const days = [];
-    
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-
-    // Add all days of the month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(year, month, i));
     }
-
     return days;
   };
 
-  const getDisponibilitesForDate = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return disponibilites.filter(dispo => {
-      const dispoDate = new Date(dispo.dateDebut).toISOString().split('T')[0];
-      return dispoDate === dateStr;
-    });
-  };
-
-  const getStatusColor = (disponibilite: Disponibilite) => {
-    const hasReservation = disponibilite.reservations.length > 0;
-    const isMyReservation = disponibilite.reservations.some(res => res.id_Candidat === session?.user.id);
-    
-    if (isMyReservation) {
-      return "bg-green-100 border-green-300 text-green-800";
-    }
-    if (hasReservation) {
-      return "bg-red-100 border-red-300 text-red-800";
-    }
-    return "bg-blue-100 border-blue-300 text-blue-800";
-  };
-
-  const getStatusText = (disponibilite: Disponibilite) => {
-    const hasReservation = disponibilite.reservations.length > 0;
-    const isMyReservation = disponibilite.reservations.some(res => res.id_Candidat === session?.user.id);
-    
-    if (isMyReservation) {
-      return "Votre réservation";
-    }
-    if (hasReservation) {
-      return "Réservé";
-    }
-    return "Disponible";
-  };
-
   const handleDateClick = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const clickedDay = new Date(date);
+    clickedDay.setHours(0, 0, 0, 0);
+    if (clickedDay < today) return; // Prevent past days
+    const reservation = getReservationForDay(date);
+    if (reservation) {
+      setSelectedReservation(reservation);
+      setModalOpen(true);
+      return;
+    }
     setSelectedDate(date);
-    const slots = getDisponibilitesForDate(date);
-    setSelectedSlots(slots);
+    setSelectedHour("09:00");
+    setSelectedReservation(null);
     setModalOpen(true);
   };
+  const closeModal = () => { setModalOpen(false); setSelectedReservation(null); };
 
-  const closeModal = () => {
-    setModalOpen(false);
-  };
-
-  const handleReservation = async (disponibiliteId: string) => {
+  const handleReservation = async () => {
+    if (!selectedDate || !selectedHour) return;
+    setLoading(true);
     try {
+      const date = new Date(selectedDate);
+      const [hour, minute] = selectedHour.split(":").map(Number);
+      date.setHours(hour, minute, 0, 0);
+      const isoDate = date.toISOString();
       const response = await fetch("/api/reservation", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id_Disponibilite: disponibiliteId,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dateTime: isoDate }),
       });
-
       if (response.ok) {
-        alert("✅ Réservation créée avec succès!");
-        fetchDisponibilites();
-        setSelectedSlots([]);
+        alert("✅ Entretien réservé avec succès! Un enseignant vous sera assigné.");
+        closeModal();
       } else {
         const error = await response.json();
         alert(`❌ ${error.error}`);
       }
     } catch (error) {
       alert("❌ Erreur lors de la réservation");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleCancelReservation = async (disponibiliteId: string) => {
-    try {
-      const reservation = disponibilites
-        .find(d => d.id === disponibiliteId)
-        ?.reservations.find(r => r.id_Candidat === session?.user.id);
-
-      if (!reservation) return;
-
-      const response = await fetch(`/api/reservation/${reservation.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          status: "ANNULEE",
-        }),
-      });
-
-      if (response.ok) {
-        alert("✅ Réservation annulée avec succès!");
-        fetchDisponibilites();
-        setSelectedSlots([]);
-      } else {
-        const error = await response.json();
-        alert(`❌ ${error.error}`);
-      }
-    } catch (error) {
-      alert("❌ Erreur lors de l'annulation");
-    }
-  };
-
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const formatDate = (date: Date) => {
@@ -209,31 +131,205 @@ export default function CandidateCalendar() {
   const goToPreviousMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
-
   const goToNextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
-
   const goToToday = () => {
     setCurrentDate(new Date());
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Chargement du calendrier...</p>
-        </div>
-      </div>
-    );
-  }
-
-  console.log("Current disponibilites:", disponibilites);
-  console.log("Current session:", session);
-
   const days = getDaysInMonth(currentDate);
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+
+  // Generate hour options (08:00 to 18:00), filter for today
+  const hourOptions = Array.from({ length: 11 }, (_, i) => {
+    const hour = 8 + i;
+    return `${hour.toString().padStart(2, "0")}:00`;
+  }).filter(hourStr => {
+    if (!selectedDate) return true;
+    const today = new Date();
+    const isToday = selectedDate.toDateString() === today.toDateString();
+    if (!isToday) return true;
+    // Only allow future hours for today
+    const [hourPart] = hourStr.split(":");
+    return parseInt(hourPart) > today.getHours();
+  });
+
+  const fetchMyReservations = async () => {
+    setLoadingReservations(true);
+    try {
+      const res = await fetch("/api/reservation?mine=1");
+      if (res.ok) {
+        const data = await res.json();
+        setMyReservations(data.reservations || []);
+      }
+    } catch (e) {
+      setMyReservations([]);
+    } finally {
+      setLoadingReservations(false);
+    }
+  };
+
+  const openManageModal = () => {
+    fetchMyReservations();
+    setManageModalOpen(true);
+  };
+  const closeManageModal = () => setManageModalOpen(false);
+
+  const handleCancelReservation = async (reservationId: string) => {
+    if (!window.confirm("Voulez-vous vraiment annuler cette réservation ?")) return;
+    try {
+      const res = await fetch(`/api/reservation/${reservationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ANNULEE" }),
+      });
+      if (res.ok) {
+        setMyReservations((prev) => prev.filter(r => r.id !== reservationId));
+        alert("Réservation annulée.");
+      } else {
+        alert("Erreur lors de l'annulation.");
+      }
+    } catch (e) {
+      alert("Erreur lors de l'annulation.");
+    }
+  };
+
+  const openUpdateModal = (reservation: any) => {
+    setReservationToUpdate(reservation);
+    setUpdateDate(new Date(reservation.disponibilite?.dateDebut));
+    setUpdateHour(new Date(reservation.disponibilite?.dateDebut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", hour12: false }));
+    setUpdateModalOpen(true);
+  };
+  const closeUpdateModal = () => {
+    setUpdateModalOpen(false);
+    setReservationToUpdate(null);
+  };
+
+  const handleUpdateReservation = async () => {
+    if (!reservationToUpdate || !updateDate || !updateHour) return;
+    setUpdating(true);
+    try {
+      // 1. Cancel old reservation
+      await fetch(`/api/reservation/${reservationToUpdate.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ANNULEE" }),
+      });
+      // Wait for backend to update (ensure no active reservation)
+      await new Promise(res => setTimeout(res, 400));
+      await fetchActiveReservations();
+      // 2. Create new reservation
+      const date = new Date(updateDate);
+      const [hour, minute] = updateHour.split(":").map(Number);
+      date.setHours(hour, minute, 0, 0);
+      const isoDate = date.toISOString();
+      const response = await fetch("/api/reservation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dateTime: isoDate }),
+      });
+      if (response.ok) {
+        alert("Réservation modifiée avec succès!");
+        closeUpdateModal();
+        closeManageModal();
+      } else {
+        const error = await response.json();
+        alert(`❌ ${error.error}`);
+      }
+    } catch (e) {
+      alert("Erreur lors de la modification.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleAcceptResult = async (reservationId: string) => {
+    if (!window.confirm("Voulez-vous accepter ce résultat ? Votre rôle sera changé en ETUDIANT.")) return;
+    
+    setAcceptingResult(true);
+    try {
+      const res = await fetch(`/api/reservation/${reservationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ result: "ACCEPTER" }),
+      });
+      
+      if (res.ok) {
+        alert("✅ Résultat accepté ! Votre rôle a été changé en ETUDIANT. Vous allez être déconnecté pour rafraîchir votre session.");
+        // Force sign out to refresh session
+        await fetch('/api/auth/signout', { method: 'POST' });
+        router.push('/Auth/Signin');
+      } else {
+        const error = await res.json();
+        alert(`❌ ${error.error}`);
+      }
+    } catch (e) {
+      alert("Erreur lors de l'acceptation du résultat.");
+    } finally {
+      setAcceptingResult(false);
+    }
+  };
+
+  const getReservationForDay = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return activeReservations.find((r) => {
+      const resDate = new Date(r.disponibilite?.dateDebut).toISOString().split('T')[0];
+      return resDate === dateStr;
+    });
+  };
+
+  const getResultDisplay = (reservation: any) => {
+    if (reservation.status !== "TERMINEE") return null;
+    
+    if (reservation.result === "ACCEPTER") {
+      return (
+        <div className="text-sm text-green-600 font-medium">
+          ✅ Résultat: Accepté
+        </div>
+      );
+    } else if (reservation.result === "REFUSER") {
+      return (
+        <div className="text-sm text-red-600 font-medium">
+          ❌ Résultat: Refusé
+        </div>
+      );
+    } else {
+      return (
+        <div className="text-sm text-orange-600 font-medium">
+          ⏳ En attente de votre réponse
+        </div>
+      );
+    }
+  };
+
+  const getResultAction = (reservation: any) => {
+    if (reservation.status !== "TERMINEE") return null;
+    
+    // If enseignant accepted, show success message (no action needed)
+    if (reservation.result === "ACCEPTER") {
+      return (
+        <div className="text-sm text-green-600 font-medium">
+          ✅ Vous avez été accepté ! Votre rôle a été mis à jour en ETUDIANT.
+        </div>
+      );
+    }
+    
+    // If enseignant refused, candidate can still accept to become ETUDIANT
+    if (reservation.result === "REFUSER") {
+      return (
+        <button
+          onClick={() => handleAcceptResult(reservation.id)}
+          disabled={acceptingResult}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm disabled:opacity-50"
+        >
+          {acceptingResult ? "Acceptation..." : "Accepter le résultat"}
+        </button>
+      );
+    }
+    
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -241,13 +337,13 @@ export default function CandidateCalendar() {
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Calendrier des disponibilités</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Réserver un entretien</h1>
             <div className="flex gap-2">
               <button
-                onClick={() => router.push("/interviews")}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
+                onClick={openManageModal}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
-                📋 Voir les entretiens
+                Gérer ma réservation
               </button>
               <button
                 onClick={() => router.push("/welcome")}
@@ -257,59 +353,33 @@ export default function CandidateCalendar() {
               </button>
             </div>
           </div>
-
           {/* Calendar Navigation */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <button
-                onClick={goToPreviousMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                ←
-              </button>
+              <button onClick={goToPreviousMonth} className="p-2 hover:bg-gray-100 rounded-lg">←</button>
               <h2 className="text-xl font-semibold capitalize">{monthName}</h2>
-              <button
-                onClick={goToNextMonth}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                →
-              </button>
+              <button onClick={goToNextMonth} className="p-2 hover:bg-gray-100 rounded-lg">→</button>
             </div>
-            <button
-              onClick={goToToday}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90"
-            >
-              Aujourd'hui
-            </button>
+            <button onClick={goToToday} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90">Aujourd'hui</button>
           </div>
-
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-1">
-            {/* Day headers */}
             {["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"].map((day) => (
-              <div key={day} className="p-3 text-center font-medium text-gray-500 text-sm">
-                {day}
-              </div>
+              <div key={day} className="p-3 text-center font-medium text-gray-500 text-sm">{day}</div>
             ))}
-
-            {/* Calendar days */}
             {days.map((day, index) => {
-              if (!day) {
-                return <div key={index} className="p-3 bg-gray-50"></div>;
-              }
-              const dayDisponibilites = getDisponibilitesForDate(day);
+              if (!day) return <div key={index} className="p-3 bg-gray-50"></div>;
               const isToday = day.toDateString() === new Date().toDateString();
-              const isSelected = selectedDate?.toDateString() === day.toDateString();
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const isPast = day < today;
+              const reservation = getReservationForDay(day);
               return (
                 <div
                   key={index}
-                  onClick={() => handleDateClick(day)}
+                  onClick={() => !isPast && handleDateClick(day)}
                   className={`p-3 min-h-[100px] border cursor-pointer transition-colors ${
-                    isToday
-                      ? "bg-blue-50 border-blue-200"
-                      : isSelected
-                      ? "bg-primary/10 border-primary"
-                      : "bg-white border-gray-200 hover:bg-gray-50"
+                    isPast ? "bg-gray-100 text-gray-400 cursor-not-allowed" : isToday ? "bg-blue-50 border-blue-200" : "bg-white border-gray-200 hover:bg-gray-50"
                   }`}
                 >
                   <div className="text-sm font-medium mb-2">
@@ -318,31 +388,19 @@ export default function CandidateCalendar() {
                       <span className="ml-1 inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
                     )}
                   </div>
-                  {/* Only show up to 2 dots and a +X badge, no text or list! */}
-                  <div className="flex flex-wrap gap-1">
-                    {dayDisponibilites.slice(0, 2).map((dispo) => (
-                      <span
-                        key={dispo.id}
-                        className={`inline-block w-4 h-4 rounded-full border-2 ${getStatusColor(dispo)} border-opacity-80`}
-                        title={formatTime(dispo.dateDebut) + ' - ' + getStatusText(dispo)}
-                      ></span>
-                    ))}
-                    {dayDisponibilites.length > 2 && (
-                      <span className="inline-block text-xs bg-gray-200 text-gray-700 rounded-full px-2 py-0.5 align-middle">
-                        +{dayDisponibilites.length - 2}
-                      </span>
-                    )}
-                  </div>
+                  {/* Show green dot if reservation exists for this day */}
+                  {reservation && (
+                    <span className="inline-block w-4 h-4 rounded-full border-2 border-green-600 bg-green-400 mt-1" title="Vous avez une réservation"></span>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
-
-        {/* Modal for selected date details */}
-        {modalOpen && selectedDate && (
+        {/* Modal for picking hour and confirming reservation or showing reservation details */}
+        {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full relative">
               <button
                 onClick={closeModal}
                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
@@ -350,67 +408,140 @@ export default function CandidateCalendar() {
               >
                 &times;
               </button>
-              <h3 className="text-lg font-semibold mb-4">
-                Disponibilités du {formatDate(selectedDate)}
-              </h3>
-              {selectedSlots.length === 0 ? (
-                <p className="text-gray-500">Aucune disponibilité pour cette date.</p>
+              {selectedReservation ? (
+                <>
+                  <h3 className="text-lg font-semibold mb-4">Votre réservation</h3>
+                  <div className="mb-2">Date : {new Date(selectedReservation.disponibilite?.dateDebut).toLocaleDateString("fr-FR")}</div>
+                  <div className="mb-2">Heure : {new Date(selectedReservation.disponibilite?.dateDebut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>
+                  <div className="mb-2">Enseignant : {selectedReservation.disponibilite?.enseignant?.prenom} {selectedReservation.disponibilite?.enseignant?.nom}</div>
+                  <div className="mb-2">Statut : {selectedReservation.status}</div>
+                  {getResultDisplay(selectedReservation)}
+                  {getResultAction(selectedReservation)}
+                </>
               ) : (
-                <div className="grid gap-4">
-                  {selectedSlots.map((slot) => {
-                    const isMyReservation = slot.reservations.some(res => res.id_Candidat === session?.user.id);
-                    const hasReservation = slot.reservations.length > 0;
-                    const canReserve = !hasReservation;
-                    return (
-                      <div
-                        key={slot.id}
-                        className={`p-4 rounded-lg border ${
-                          isMyReservation
-                            ? "bg-green-50 border-green-200"
-                            : hasReservation
-                            ? "bg-red-50 border-red-200"
-                            : "bg-blue-50 border-blue-200"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium">
-                              {formatTime(slot.dateDebut)} - {formatTime(slot.dateFin)}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {slot.enseignant.prenom} {slot.enseignant.nom} ({slot.enseignant.specialite})
-                            </p>
-                            <p className="text-sm font-medium">
-                              {getStatusText(slot)}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            {isMyReservation ? (
-                              <button
-                                onClick={() => handleCancelReservation(slot.id)}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-                              >
-                                Annuler
-                              </button>
-                            ) : canReserve ? (
-                              <button
-                                onClick={() => handleReservation(slot.id)}
-                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 text-sm"
-                              >
-                                Réserver
-                              </button>
-                            ) : (
-                              <span className="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm">
-                                Réservé
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <>
+                  <h3 className="text-lg font-semibold mb-4">Choisir l'heure pour le {selectedDate && formatDate(selectedDate)}</h3>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-2">Heure</label>
+                    <select
+                      value={selectedHour}
+                      onChange={e => setSelectedHour(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      {hourOptions.map((h) => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleReservation}
+                    disabled={loading}
+                    className="w-full bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 disabled:opacity-50"
+                  >
+                    {loading ? "Réservation..." : "Confirmer la réservation"}
+                  </button>
+                </>
               )}
+            </div>
+          </div>
+        )}
+        {/* Modal for managing reservations */}
+        {manageModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
+              <button
+                onClick={closeManageModal}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+                aria-label="Fermer"
+              >
+                &times;
+              </button>
+              <h3 className="text-lg font-semibold mb-4">Ma réservation</h3>
+              {loadingReservations ? (
+                <div className="text-center text-gray-500">Chargement...</div>
+              ) : myReservations.length === 0 ? (
+                <div className="text-center text-gray-500">Aucune réservation trouvée.</div>
+              ) : (
+                <ul className="divide-y divide-gray-200">
+                  {myReservations.map((r) => (
+                    <li key={r.id} className="py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">
+                          {new Date(r.disponibilite?.dateDebut).toLocaleDateString("fr-FR")} {new Date(r.disponibilite?.dateDebut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Enseignant: {r.disponibilite?.enseignant?.prenom} {r.disponibilite?.enseignant?.nom}
+                        </div>
+                        <div className="text-xs text-gray-500">Statut: {r.status}</div>
+                        {getResultDisplay(r)}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        {getResultAction(r)}
+                        {r.status !== "TERMINEE" && (
+                          <>
+                            <button
+                              onClick={() => handleCancelReservation(r.id)}
+                              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                            >
+                              Supprimer
+                            </button>
+                            <button
+                              onClick={() => openUpdateModal(r)}
+                              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-sm"
+                            >
+                              Modifier
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Update reservation modal */}
+        {updateModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-xs w-full relative">
+              <button
+                onClick={closeUpdateModal}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+                aria-label="Fermer"
+              >
+                &times;
+              </button>
+              <h3 className="text-lg font-semibold mb-4">Modifier la réservation</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Date</label>
+                <input
+                  type="date"
+                  value={updateDate ? updateDate.toISOString().split('T')[0] : ""}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => setUpdateDate(new Date(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Heure</label>
+                <select
+                  value={updateHour}
+                  onChange={e => setUpdateHour(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  {hourOptions.map((h) => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={handleUpdateReservation}
+                disabled={updating}
+                className="w-full bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 disabled:opacity-50"
+              >
+                {updating ? "Modification..." : "Confirmer la modification"}
+              </button>
             </div>
           </div>
         )}

@@ -85,7 +85,6 @@ export default function CreateUsersPage() {
             >
               <option value="ADMIN">👑 Administrateur</option>
               <option value="ENSEIGNANT">👨‍🏫 Enseignant</option>
-              <option value="CANDIDAT">👤 Candidat</option>
             </select>
           </div>
 

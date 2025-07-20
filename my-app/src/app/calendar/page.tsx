@@ -16,6 +16,7 @@ interface Disponibilite {
       specialite: string;
     };
     status: string;
+    result?: string;
   }>;
 }
 
@@ -27,6 +28,11 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDayDetails, setShowDayDetails] = useState(false);
+  // For managing interview results
+  const [managingResult, setManagingResult] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
+  const [resultModalOpen, setResultModalOpen] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<string>("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -123,6 +129,82 @@ export default function CalendarPage() {
     const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(clickedDate);
     setShowDayDetails(true);
+  };
+
+  const handleMarkAsTerminee = async (reservationId: string, result: string) => {
+    if (!result || (result !== "ACCEPTER" && result !== "REFUSER")) {
+      alert("Veuillez sélectionner un résultat valide");
+      return;
+    }
+
+    setManagingResult(true);
+    try {
+      const res = await fetch(`/api/reservation/${reservationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "TERMINEE", result }),
+      });
+
+      if (res.ok) {
+        alert(`✅ Entretien marqué comme terminé avec le résultat: ${result === "ACCEPTER" ? "Accepté" : "Refusé"}`);
+        fetchDisponibilites(); // Refresh data
+        setResultModalOpen(false);
+        setSelectedReservation(null);
+      } else {
+        const error = await res.json();
+        alert(`❌ ${error.error}`);
+      }
+    } catch (e) {
+      alert("Erreur lors de la mise à jour du statut");
+    } finally {
+      setManagingResult(false);
+    }
+  };
+
+  const openResultModal = (reservation: any) => {
+    setSelectedReservation(reservation);
+    setSelectedResult("");
+    setResultModalOpen(true);
+  };
+
+  const getResultDisplay = (reservation: any) => {
+    if (reservation.status !== "TERMINEE") return null;
+    
+    if (reservation.result === "ACCEPTER") {
+      return (
+        <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+          ✅ Accepté
+        </span>
+      );
+    } else if (reservation.result === "REFUSER") {
+      return (
+        <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+          ❌ Refusé
+        </span>
+      );
+    } else {
+      return (
+        <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
+          ⏳ En attente
+        </span>
+      );
+    }
+  };
+
+  const getResultAction = (reservation: any) => {
+    if (reservation.status === "TERMINEE") {
+      return getResultDisplay(reservation);
+    } else if (reservation.status === "CONFIRMEE") {
+      return (
+        <button
+          onClick={() => openResultModal(reservation)}
+          className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+        >
+          Marquer Terminé
+        </button>
+      );
+    }
+    return null;
   };
 
   if (status === "loading" || loading) {
@@ -415,6 +497,7 @@ export default function CalendarPage() {
                                   >
                                     {reservation.status.replace("_", " ")}
                                   </span>
+                                  {getResultAction(reservation)}
                                 </div>
                               </div>
                             ))}
@@ -425,6 +508,82 @@ export default function CalendarPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Result Management Modal */}
+      {resultModalOpen && selectedReservation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">
+                  Marquer l'entretien comme terminé
+                </h2>
+                <button
+                  onClick={() => setResultModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-gray-600 mb-2">
+                  Candidat: <strong>{selectedReservation.candidat.prenom} {selectedReservation.candidat.nom}</strong>
+                </p>
+                <p className="text-gray-600 mb-4">
+                  Spécialité: <strong>{selectedReservation.candidat.specialite}</strong>
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Résultat de l'entretien
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="result"
+                      value="ACCEPTER"
+                      checked={selectedResult === "ACCEPTER"}
+                      onChange={(e) => setSelectedResult(e.target.value)}
+                      className="mr-2"
+                    />
+                    <span className="text-green-700">✅ Accepter le candidat</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="result"
+                      value="REFUSER"
+                      checked={selectedResult === "REFUSER"}
+                      onChange={(e) => setSelectedResult(e.target.value)}
+                      className="mr-2"
+                    />
+                    <span className="text-red-700">❌ Refuser le candidat</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setResultModalOpen(false)}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={() => handleMarkAsTerminee(selectedReservation.id, selectedResult)}
+                  disabled={!selectedResult || managingResult}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {managingResult ? "Mise à jour..." : "Confirmer"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

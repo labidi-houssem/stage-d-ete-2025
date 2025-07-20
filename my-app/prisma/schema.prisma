@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -61,6 +55,7 @@ model Reservation {
   id_Candidat      String
   id_Disponibilite String
   status           ReservationStatus @default(EN_ATTENTE)
+  result           ReservationResult @default(EN_ATTENTE)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -73,6 +68,7 @@ enum UserRole {
   ADMIN
   ENSEIGNANT
   CANDIDAT
+  ETUDIANT
 }
 
 enum ReservationStatus {
@@ -80,4 +76,10 @@ enum ReservationStatus {
   CONFIRMEE
   ANNULEE
   TERMINEE
+}
+
+enum ReservationResult {
+  EN_ATTENTE
+  ACCEPTER
+  REFUSER
 }
