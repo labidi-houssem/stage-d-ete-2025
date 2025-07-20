@@ -56,12 +56,16 @@ export async function GET() {
             email: true
           }
         },
-        enseignant: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-            email: true
+        disponibilite: {
+          include: {
+            enseignant: {
+              select: {
+                id: true,
+                nom: true,
+                prenom: true,
+                email: true
+              }
+            }
           }
         }
       }
@@ -130,15 +134,13 @@ export async function GET() {
         id: reservation.id,
         status: reservation.status,
         result: reservation.result,
-        date: reservation.date,
-        heure: reservation.heure,
         candidat: reservation.candidat ? {
           name: `${reservation.candidat.prenom} ${reservation.candidat.nom}`,
           email: reservation.candidat.email
         } : null,
-        enseignant: reservation.enseignant ? {
-          name: `${reservation.enseignant.prenom} ${reservation.enseignant.nom}`,
-          email: reservation.enseignant.email
+        enseignant: reservation.disponibilite?.enseignant ? {
+          name: `${reservation.disponibilite.enseignant.prenom} ${reservation.disponibilite.enseignant.nom}`,
+          email: reservation.disponibilite.enseignant.email
         } : null,
         createdAt: reservation.createdAt
       })),
