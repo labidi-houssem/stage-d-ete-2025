@@ -14,10 +14,20 @@ interface User {
   updatedAt: string;
 }
 
+const roleOptions = [
+  { value: '', label: 'Tous les rôles' },
+  { value: 'ADMIN', label: 'Admin' },
+  { value: 'ENSEIGNANT', label: 'Enseignant' },
+  { value: 'CANDIDAT', label: 'Candidat' },
+  { value: 'ETUDIANT', label: 'Étudiant' },
+];
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -98,6 +108,17 @@ export default function UsersPage() {
     etudiants: users.filter(u => u.role === 'ETUDIANT').length,
   };
 
+  // Filtered users
+  const filteredUsers = users.filter(user => {
+    const matchesSearch =
+      user.name?.toLowerCase().includes(search.toLowerCase()) ||
+      user.email?.toLowerCase().includes(search.toLowerCase()) ||
+      user.nom?.toLowerCase().includes(search.toLowerCase()) ||
+      user.prenom?.toLowerCase().includes(search.toLowerCase());
+    const matchesRole = roleFilter ? user.role === roleFilter : true;
+    return matchesSearch && matchesRole;
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -131,6 +152,33 @@ export default function UsersPage() {
                 Retour
               </button>
             </div>
+          </div>
+
+          {/* Search and Filter */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6 items-center w-full">
+            <div className="relative w-full md:w-1/3">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 103 10a7 7 0 0014 0z" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                placeholder="Rechercher par nom, prénom ou email..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <select
+              value={roleFilter}
+              onChange={e => setRoleFilter(e.target.value)}
+              className="w-full md:w-48 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              {roleOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </div>
 
           {error && (
@@ -226,7 +274,7 @@ export default function UsersPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -285,7 +333,7 @@ export default function UsersPage() {
           </div>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            Total: {users.length} utilisateur(s)
+            Total: {filteredUsers.length} utilisateur(s)
           </div>
         </div>
       </div>

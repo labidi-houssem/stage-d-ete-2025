@@ -30,6 +30,8 @@ export default function SignupWithPassword() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Validation functions
   const validateCIN = (cin: string) => {
@@ -444,26 +446,62 @@ export default function SignupWithPassword() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <InputGroup
-            type="password"
+            type={showPassword ? "text" : "password"}
             label="Mot de passe"
             placeholder="Entrer votre mot de passe"
             name="password"
             handleChange={handleChange}
             value={data.password}
-            icon={<PasswordIcon />}
+            rightIcon={
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword((v) => !v)}
+                className="focus:outline-none"
+                aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                style={{ background: 'none', border: 'none', padding: 0, margin: 0 }}
+              >
+                {showPassword ? (
+                  // Open eye icon
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
+                ) : (
+                  // Eye with slash (closed)
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18M1.5 12S5.5 5 12 5c2.5 0 4.77.77 6.65 2.05M22.5 12S18.5 19 12 19c-2.5 0-4.77-.77-6.65-2.05M9.88 9.88A3 3 0 0112 9c1.66 0 3 1.34 3 3 0 .53-.14 1.03-.38 1.46" /><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
+                )}
+              </button>
+            }
+            iconPosition="right"
             className="[&_input]:py-[15px]"
           />
           {renderError('password')}
         </div>
         <div>
           <InputGroup
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             label="Confirmer mot de passe"
             placeholder="Confirmer votre mot de passe"
             name="confirmPassword"
             handleChange={handleChange}
             value={data.confirmPassword}
-            icon={<PasswordIcon />}
+            rightIcon={
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowConfirmPassword((v) => !v)}
+                className="focus:outline-none"
+                aria-label={showConfirmPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                style={{ background: 'none', border: 'none', padding: 0, margin: 0 }}
+              >
+                {showConfirmPassword ? (
+                  // Open eye icon
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z" /><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
+                ) : (
+                  // Eye with slash (closed)
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18M1.5 12S5.5 5 12 5c2.5 0 4.77.77 6.65 2.05M22.5 12S18.5 19 12 19c-2.5 0-4.77-.77-6.65-2.05M9.88 9.88A3 3 0 0112 9c1.66 0 3 1.34 3 3 0 .53-.14 1.03-.38 1.46" /><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" fill="none" /></svg>
+                )}
+              </button>
+            }
+            iconPosition="right"
             className="[&_input]:py-[15px]"
           />
           {renderError('confirmPassword')}

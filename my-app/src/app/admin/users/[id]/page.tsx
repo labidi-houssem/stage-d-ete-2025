@@ -193,82 +193,11 @@ export default function UserDetailsPage({ params }: { params: Promise<{ id: stri
                 <span className="font-medium">{user.telephone || "Non renseigné"}</span>
               </div>
               
-              <div className="flex justify-between py-2 border-b border-gray-100">
+              <div className="flex justify-between py-2">
                 <span className="text-gray-600 font-medium">CIN:</span>
                 <span className="font-medium">{user.cin || "Non renseigné"}</span>
               </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Adresse:</span>
-                <span className="font-medium">{user.address || "Non renseignée"}</span>
-              </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Gouvernorat:</span>
-                <span className="font-medium">{user.gouvernorat || "Non renseigné"}</span>
-              </div>
-              
-              <div className="flex justify-between py-2">
-                <span className="text-gray-600 font-medium">Spécialité:</span>
-                <span className="font-medium">{user.specialite || "Non renseignée"}</span>
-              </div>
             </div>
-          </div>
-
-          {/* Additional Information */}
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Informations Supplémentaires
-            </h2>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Civilité:</span>
-                <span className="font-medium">{user.civilite || "Non renseignée"}</span>
-              </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Nationalité:</span>
-                <span className="font-medium">{user.nationalite || "Non renseignée"}</span>
-              </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Date de naissance:</span>
-                <span className="font-medium">{formatDate(user.dateNaissance)}</span>
-              </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Date de délivrance CIN:</span>
-                <span className="font-medium">{formatDate(user.dateDelivrance)}</span>
-              </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Lieu de délivrance:</span>
-                <span className="font-medium">{user.lieuDelivrance || "Non renseigné"}</span>
-              </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600 font-medium">Membre depuis:</span>
-                <span className="font-medium">{formatDate(user.createdAt)}</span>
-              </div>
-              
-              <div className="flex justify-between py-2">
-                <span className="text-gray-600 font-medium">Dernière mise à jour:</span>
-                <span className="font-medium">{formatDate(user.updatedAt)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* User ID Information */}
-        <div className="mt-8 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            Informations Techniques
-          </h2>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-600">
-              <strong>ID Utilisateur:</strong> {user.id}
-            </p>
           </div>
         </div>
       </div>

@@ -4,7 +4,11 @@ import { prisma } from "@/lib/prisma";
 // GET - Get all disponibilites for candidates (public access)
 export async function GET(request: NextRequest) {
   try {
+    const now = new Date();
     const disponibilites = await prisma.disponibilite.findMany({
+      where: {
+        dateDebut: { gt: now }
+      },
       include: {
         enseignant: {
           select: {
@@ -18,7 +22,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             status: true,
-            candidatId: true
+            id_Candidat: true
           }
         }
       },

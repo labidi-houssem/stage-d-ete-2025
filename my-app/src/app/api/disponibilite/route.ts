@@ -18,9 +18,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const enseignantId = searchParams.get('enseignantId') || session.user.id;
 
+    const now = new Date();
     const disponibilites = await prisma.disponibilite.findMany({
       where: {
-        id_Enseignant: enseignantId
+        id_Enseignant: enseignantId,
+        dateDebut: { gt: now }
       },
       include: {
         reservations: {
@@ -70,6 +72,25 @@ export async function POST(request: NextRequest) {
     if (!dateDebut || !dateFin) {
       return NextResponse.json(
         { error: "Date de début et date de fin sont requises" },
+        { status: 400 }
+      );
+    }
+
+    // Prevent overlapping slots for the same enseignant
+    const overlap = await prisma.disponibilite.findFirst({
+      where: {
+        id_Enseignant: session.user.id,
+        OR: [
+          {
+            dateDebut: { lt: new Date(dateFin) },
+            dateFin: { gt: new Date(dateDebut) }
+          }
+        ]
+      }
+    });
+    if (overlap) {
+      return NextResponse.json(
+        { error: "Vous avez déjà une disponibilité qui chevauche ce créneau." },
         { status: 400 }
       );
     }

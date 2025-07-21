@@ -26,6 +26,8 @@ export default function CandidateCalendar() {
   const [updating, setUpdating] = useState(false);
   // For accepting results
   const [acceptingResult, setAcceptingResult] = useState(false);
+  // Fetch disponibilites for the current month
+  const [allDisponibilites, setAllDisponibilites] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -41,6 +43,18 @@ export default function CandidateCalendar() {
     }
     // Fetch active reservations for calendar dots
     fetchActiveReservations();
+    // Fetch disponibilites for the current month (use public endpoint)
+    if (status === "authenticated" && session?.user?.role === "CANDIDAT") {
+      fetch("/api/disponibilite/public")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setAllDisponibilites(data);
+          } else {
+            setAllDisponibilites([]);
+          }
+        });
+    }
   }, [session, status, router]);
 
   const fetchActiveReservations = async () => {
@@ -141,19 +155,47 @@ export default function CandidateCalendar() {
   const days = getDaysInMonth(currentDate);
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
-  // Generate hour options (08:00 to 18:00), filter for today
-  const hourOptions = Array.from({ length: 11 }, (_, i) => {
-    const hour = 8 + i;
-    return `${hour.toString().padStart(2, "0")}:00`;
-  }).filter(hourStr => {
-    if (!selectedDate) return true;
-    const today = new Date();
-    const isToday = selectedDate.toDateString() === today.toDateString();
-    if (!isToday) return true;
-    // Only allow future hours for today
-    const [hourPart] = hourStr.split(":");
-    return parseInt(hourPart) > today.getHours();
+  // For calendar dots
+  const getSlotsForDay = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return allDisponibilites.filter(d => {
+      const slotDateStr = new Date(d.dateDebut).toISOString().split('T')[0];
+      return slotDateStr === dateStr;
+    });
+  };
+
+  // Helper: check if a day has at least one available slot
+  const isDayReservable = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return allDisponibilites.some(d => {
+      const slotDateStr = new Date(d.dateDebut).toISOString().split('T')[0];
+      // A slot is available if it has no reservations or all reservations are cancelled
+      return slotDateStr === dateStr && (!d.reservations || d.reservations.length === 0 || d.reservations.every((r: any) => r.status === 'ANNULEE'));
+    });
+  };
+
+  // Helper: get available slots for a day
+  const getAvailableSlotsForDay = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    return allDisponibilites.filter(d => {
+      const slotDateStr = new Date(d.dateDebut).toISOString().split('T')[0];
+      return slotDateStr === dateStr && (!d.reservations || d.reservations.length === 0 || d.reservations.every((r: any) => r.status === 'ANNULEE'));
+    });
+  };
+
+  // In the modal, only show available hours for the selected day
+  const availableSlotsForSelectedDay = selectedDate ? getAvailableSlotsForDay(selectedDate) : [];
+  const availableHourOptions = availableSlotsForSelectedDay.map(slot => {
+    const d = new Date(slot.dateDebut);
+    return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", hour12: false });
   });
+
+  // Debug logs
+  if (selectedDate) {
+    console.log('All disponibilites:', allDisponibilites);
+    console.log('Selected date:', selectedDate.toISOString().split('T')[0]);
+    console.log('Available slots for selected day:', availableSlotsForSelectedDay);
+  }
 
   const fetchMyReservations = async () => {
     setLoadingReservations(true);
@@ -373,14 +415,18 @@ export default function CandidateCalendar() {
               const today = new Date();
               today.setHours(0, 0, 0, 0);
               const isPast = day < today;
-              const reservation = getReservationForDay(day);
+              const reservable = isDayReservable(day);
+              const slots = getSlotsForDay(day);
               return (
                 <div
                   key={index}
-                  onClick={() => !isPast && handleDateClick(day)}
-                  className={`p-3 min-h-[100px] border cursor-pointer transition-colors ${
-                    isPast ? "bg-gray-100 text-gray-400 cursor-not-allowed" : isToday ? "bg-blue-50 border-blue-200" : "bg-white border-gray-200 hover:bg-gray-50"
-                  }`}
+                  onClick={() => !isPast && reservable && handleDateClick(day)}
+                  className={`p-3 min-h-[100px] border cursor-pointer transition-colors flex flex-col items-center justify-between
+                    ${isPast ? "bg-gray-100 text-gray-400 cursor-not-allowed" :
+                      reservable ? "bg-yellow-50 border-yellow-400 hover:bg-yellow-100" : "bg-white border-gray-200 text-gray-300 cursor-not-allowed"}
+                    ${isToday ? "border-blue-400" : ""}
+                  `}
+                  style={{ opacity: reservable && !isPast ? 1 : 0.5 }}
                 >
                   <div className="text-sm font-medium mb-2">
                     {day.getDate()}
@@ -388,13 +434,28 @@ export default function CandidateCalendar() {
                       <span className="ml-1 inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
                     )}
                   </div>
-                  {/* Show green dot if reservation exists for this day */}
-                  {reservation && (
-                    <span className="inline-block w-4 h-4 rounded-full border-2 border-green-600 bg-green-400 mt-1" title="Vous avez une réservation"></span>
-                  )}
+                  {/* Show color dots for each slot: yellow for available, green for reserved */}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {slots.map((slot, idx) => (
+                      <span
+                        key={slot.id + idx}
+                        className={`inline-block w-3 h-3 rounded-full ${
+                          slot.reservations && slot.reservations.length > 0 && slot.reservations.some((r: any) => r.status !== 'ANNULEE')
+                            ? 'bg-green-500'
+                            : 'bg-yellow-400'
+                        }`}
+                        title={slot.reservations && slot.reservations.length > 0 && slot.reservations.some((r: any) => r.status !== 'ANNULEE') ? 'Réservé' : 'Disponible'}
+                      />
+                    ))}
+                  </div>
                 </div>
               );
             })}
+          </div>
+          {/* Legend for dots */}
+          <div className="flex gap-4 mt-2 items-center">
+            <span className="inline-block w-3 h-3 rounded-full bg-yellow-400 mr-1"></span> <span className="text-sm">Disponible</span>
+            <span className="inline-block w-3 h-3 rounded-full bg-green-500 ml-4 mr-1"></span> <span className="text-sm">Réservé</span>
           </div>
         </div>
         {/* Modal for picking hour and confirming reservation or showing reservation details */}
@@ -428,14 +489,18 @@ export default function CandidateCalendar() {
                       onChange={e => setSelectedHour(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     >
-                      {hourOptions.map((h) => (
-                        <option key={h} value={h}>{h}</option>
-                      ))}
+                      {availableHourOptions.length === 0 ? (
+                        <option value="">Aucune heure disponible pour ce jour. Veuillez choisir un autre jour.</option>
+                      ) : (
+                        availableHourOptions.map((h) => (
+                          <option key={h} value={h}>{h}</option>
+                        ))
+                      )}
                     </select>
                   </div>
                   <button
                     onClick={handleReservation}
-                    disabled={loading}
+                    disabled={loading || availableHourOptions.length === 0}
                     className="w-full bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 disabled:opacity-50"
                   >
                     {loading ? "Réservation..." : "Confirmer la réservation"}
@@ -459,11 +524,11 @@ export default function CandidateCalendar() {
               <h3 className="text-lg font-semibold mb-4">Ma réservation</h3>
               {loadingReservations ? (
                 <div className="text-center text-gray-500">Chargement...</div>
-              ) : myReservations.length === 0 ? (
+              ) : myReservations.filter(r => r.status !== 'ANNULEE').length === 0 ? (
                 <div className="text-center text-gray-500">Aucune réservation trouvée.</div>
               ) : (
                 <ul className="divide-y divide-gray-200">
-                  {myReservations.map((r) => (
+                  {myReservations.filter(r => r.status !== 'ANNULEE').map((r) => (
                     <li key={r.id} className="py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                       <div className="flex-1">
                         <div className="font-medium text-gray-900">
@@ -530,9 +595,13 @@ export default function CandidateCalendar() {
                   onChange={e => setUpdateHour(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  {hourOptions.map((h) => (
-                    <option key={h} value={h}>{h}</option>
-                  ))}
+                  {availableHourOptions.length === 0 ? (
+                    <option value="">Aucune heure disponible</option>
+                  ) : (
+                    availableHourOptions.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))
+                  )}
                 </select>
               </div>
               <button
