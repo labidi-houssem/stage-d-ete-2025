@@ -54,11 +54,11 @@ function getSidebarLinks(role: string | undefined): SidebarLink[] {
         { href: "/calendar/manage", label: "Gérer Disponibilités", icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         ) },
-        { href: "/calendar/reservations", label: "Entretiens Réservés", icon: (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13l2 2 4-4" /></svg>
-        ) },
         { href: "/calendar/stats", label: "Statistiques", icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v18h18" /><rect x="7" y="13" width="2" height="5" rx="1" /><rect x="11" y="9" width="2" height="9" rx="1" /><rect x="15" y="6" width="2" height="12" rx="1" /></svg>
+        ) },
+        { href: "/calendar/reservations", label: "Historique", icon: (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19a7 7 0 100-14 7 7 0 000 14z" /></svg>
         ) },
       ];
     case 'ETUDIANT':

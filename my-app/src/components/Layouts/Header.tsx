@@ -21,6 +21,10 @@ export default function Header() {
         <Image src="/images/logo/logo.jpg" alt="Logo" width={100} height={100} className="rounded mr-2" />
       </div>
       <div className="flex items-center gap-4">
+        <span className="text-white text-sm font-semibold">Bienvenue !</span>
+        {user?.name && (
+          <span className="text-white text-base font-bold">{user.name}</span>
+        )}
         {/* User avatar/icon */}
         <button
           onClick={() => router.push(profileLink)}
@@ -43,7 +47,6 @@ export default function Header() {
             </span>
           )}
         </button>
-        <span className="text-white text-sm">Bienvenue !</span>
       </div>
     </header>
   );

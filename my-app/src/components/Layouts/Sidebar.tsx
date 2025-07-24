@@ -83,7 +83,7 @@ export default function Sidebar({ links, currentPath, horizontal = false }: Side
       <aside
         className={`fixed z-20 top-0 left-0 h-full w-64 bg-gradient-to-b from-red-600 via-white to-white shadow-xl flex flex-col rounded-r-3xl transition-transform duration-200 md:static md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       >
-        <div className="p-6 font-bold text-2xl text-white bg-red-600 rounded-tr-3xl rounded-br-3xl shadow flex items-center justify-between">
+        <div className="p-6 font-bold text-2xl text-white bg-black shadow flex items-center justify-between h-16">
           Dashboard
           <button
             className="md:hidden p-1 ml-2 rounded hover:bg-gray-100"

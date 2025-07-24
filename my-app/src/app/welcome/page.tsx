@@ -1,20 +1,23 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 
 export default function WelcomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [myReservations, setMyReservations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session?.user?.role === 'CANDIDAT') {
-      fetch('/api/reservation?mine=1').then(res => res.json()).then(data => {
-        if (data.reservations?.some((r: any) => r.status === 'TERMINEE')) {
-          signOut({ callbackUrl: '/Auth/Signin' });
-        }
-      });
+    if (session?.user?.role === "CANDIDAT") {
+      fetch("/api/reservation?mine=1")
+        .then(res => res.json())
+        .then(data => setMyReservations(data.reservations || []))
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
   }, [session]);
 
@@ -24,7 +27,7 @@ export default function WelcomePage() {
     }
   }, [status, router]);
 
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -37,6 +40,26 @@ export default function WelcomePage() {
 
   if (!session) {
     return null;
+  }
+
+  // If candidate has a reservation with result REFUSER, show only the result
+  if (session?.user?.role === "CANDIDAT") {
+    const refusedReservation = myReservations.find(r => r.result === 'REFUSER');
+    if (refusedReservation) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+            <h2 className="text-2xl font-bold text-red-600 mb-4">Résultat de votre entretien</h2>
+            <div className="text-lg text-gray-800 mb-2">Votre résultat : <span className="font-bold text-red-600">Refusé</span></div>
+            <div className="text-gray-600 mb-4">Vous ne pouvez plus réserver d'autres entretiens.</div>
+            <div className="mb-2">Date : {new Date(refusedReservation.disponibilite?.dateDebut).toLocaleDateString("fr-FR")}</div>
+            <div className="mb-2">Heure : {new Date(refusedReservation.disponibilite?.dateDebut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>
+            <div className="mb-2">Enseignant : {refusedReservation.disponibilite?.enseignant?.prenom} {refusedReservation.disponibilite?.enseignant?.nom}</div>
+            <div className="mb-2">Statut : {refusedReservation.status}</div>
+          </div>
+        </div>
+      );
+    }
   }
 
   // Custom message for Etudiant

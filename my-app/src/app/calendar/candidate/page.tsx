@@ -155,20 +155,23 @@ export default function CandidateCalendar() {
   const days = getDaysInMonth(currentDate);
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
+  // Helper: get local date string in YYYY-MM-DD
+  const getLocalDateStr = (date: Date) => date.toLocaleDateString('fr-CA');
+
   // For calendar dots
   const getSlotsForDay = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(date);
     return allDisponibilites.filter(d => {
-      const slotDateStr = new Date(d.dateDebut).toISOString().split('T')[0];
+      const slotDateStr = getLocalDateStr(new Date(d.dateDebut));
       return slotDateStr === dateStr;
     });
   };
 
   // Helper: check if a day has at least one available slot
   const isDayReservable = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(date);
     return allDisponibilites.some(d => {
-      const slotDateStr = new Date(d.dateDebut).toISOString().split('T')[0];
+      const slotDateStr = getLocalDateStr(new Date(d.dateDebut));
       // A slot is available if it has no reservations or all reservations are cancelled
       return slotDateStr === dateStr && (!d.reservations || d.reservations.length === 0 || d.reservations.every((r: any) => r.status === 'ANNULEE'));
     });
@@ -176,19 +179,19 @@ export default function CandidateCalendar() {
 
   // Helper: get available slots for a day
   const getAvailableSlotsForDay = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(date);
     return allDisponibilites.filter(d => {
-      const slotDateStr = new Date(d.dateDebut).toISOString().split('T')[0];
+      const slotDateStr = getLocalDateStr(new Date(d.dateDebut));
       return slotDateStr === dateStr && (!d.reservations || d.reservations.length === 0 || d.reservations.every((r: any) => r.status === 'ANNULEE'));
     });
   };
 
-  // In the modal, only show available hours for the selected day
+  // In the modal, only show each available hour once (even if multiple enseignants)
   const availableSlotsForSelectedDay = selectedDate ? getAvailableSlotsForDay(selectedDate) : [];
-  const availableHourOptions = availableSlotsForSelectedDay.map(slot => {
+  const availableHourOptions = Array.from(new Set(availableSlotsForSelectedDay.map(slot => {
     const d = new Date(slot.dateDebut);
     return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", hour12: false });
-  });
+  })));
 
   // Debug logs
   if (selectedDate) {
@@ -314,9 +317,9 @@ export default function CandidateCalendar() {
   };
 
   const getReservationForDay = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = getLocalDateStr(date);
     return activeReservations.find((r) => {
-      const resDate = new Date(r.disponibilite?.dateDebut).toISOString().split('T')[0];
+      const resDate = getLocalDateStr(new Date(r.disponibilite?.dateDebut));
       return resDate === dateStr;
     });
   };
@@ -372,6 +375,25 @@ export default function CandidateCalendar() {
     
     return null;
   };
+
+  // Find a reservation with result REFUSER
+  const refusedReservation = myReservations.find(r => r.result === 'REFUSER');
+
+  if (refusedReservation) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Résultat de votre entretien</h2>
+          <div className="text-lg text-gray-800 mb-2">Votre résultat : <span className="font-bold text-red-600">Refusé</span></div>
+          <div className="text-gray-600 mb-4">Vous ne pouvez plus réserver d'autres entretiens.</div>
+          <div className="mb-2">Date : {new Date(refusedReservation.disponibilite?.dateDebut).toLocaleDateString("fr-FR")}</div>
+          <div className="mb-2">Heure : {new Date(refusedReservation.disponibilite?.dateDebut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>
+          <div className="mb-2">Enseignant : {refusedReservation.disponibilite?.enseignant?.prenom} {refusedReservation.disponibilite?.enseignant?.nom}</div>
+          <div className="mb-2">Statut : {refusedReservation.status}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

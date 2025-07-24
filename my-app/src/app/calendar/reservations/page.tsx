@@ -232,6 +232,10 @@ export default function ReservationsPage() {
     return reservation.status === filterStatus;
   });
 
+  // Add a helper to filter past reservations (historique)
+  const now = new Date();
+  const historiqueReservations = reservations.filter(r => new Date(r.disponibilite.dateFin) < now);
+
   if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -400,6 +404,31 @@ export default function ReservationsPage() {
             ))
           )}
         </div>
+      </div>
+
+      {/* Historique des réservations */}
+      <div className="mt-10">
+        <h2 className="text-xl font-bold mb-4">Historique des réservations</h2>
+        {historiqueReservations.length === 0 ? (
+          <div className="text-gray-500">Aucune réservation passée.</div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {historiqueReservations.map((r) => (
+              <li key={r.id} className="py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">
+                    {new Date(r.disponibilite.dateDebut).toLocaleDateString("fr-FR")} {new Date(r.disponibilite.dateDebut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Candidat: {r.candidat?.prenom} {r.candidat?.nom} ({r.candidat?.email})
+                  </div>
+                  <div className="text-xs text-gray-500">Statut: {r.status}</div>
+                  {r.result && <div className="text-xs text-gray-500">Résultat: {r.result}</div>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Back Button */}
