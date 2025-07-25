@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { sendMail } from '@/lib/sendMail';
 
 // GET - Get all available disponibilites for candidates
 export async function GET(request: NextRequest) {
@@ -87,7 +88,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user?.role !== "CANDIDAT") {
+    const user = session?.user as any; // Fix typing for user
+    if (!session || user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Seuls les candidats peuvent réserver des entretiens" },
         { status: 401 }
@@ -104,7 +106,7 @@ export async function POST(request: NextRequest) {
     // Block if candidate has a reservation with status TERMINEE
     const hasTerminee = await prisma.reservation.findFirst({
       where: {
-        id_Candidat: session.user.id,
+        id_Candidat: user.id,
         status: "TERMINEE"
       }
     });
@@ -117,7 +119,7 @@ export async function POST(request: NextRequest) {
     // Check if candidate already has a reservation
     const existingReservation = await prisma.reservation.findFirst({
       where: {
-        id_Candidat: session.user.id,
+        id_Candidat: user.id,
         status: {
           in: ['EN_ATTENTE', 'CONFIRMEE']
         }
@@ -168,7 +170,7 @@ export async function POST(request: NextRequest) {
     // Create the reservation
     const reservation = await prisma.reservation.create({
       data: {
-        id_Candidat: session.user.id,
+        id_Candidat: user.id,
         id_Disponibilite: chosenDispo.id,
         status: 'EN_ATTENTE'
       },
@@ -180,6 +182,40 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    // Create a notification for the enseignant
+    await prisma.notification.create({
+      data: {
+        userId: chosenDispo.id_Enseignant,
+        type: 'reservation',
+        message: `Nouvelle réservation pour le ${reservation.disponibilite.dateDebut.toLocaleString('fr-FR')}`,
+        link: '/calendar/reservations',
+      }
+    });
+
+    // Create a notification for the candidate
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        type: 'reservation_created',
+        message: `Votre réservation a été créée et est en attente de confirmation pour le ${reservation.disponibilite.dateDebut.toLocaleString('fr-FR')}`,
+        link: '/calendar/candidate',
+      }
+    });
+
+    // Send email to enseignant
+    try {
+      await sendMail({
+        to: reservation.disponibilite.enseignant.email,
+        subject: 'Nouvelle réservation d\'entretien',
+        html: `<p>Bonjour ${reservation.disponibilite.enseignant.prenom},</p>
+          <p>Vous avez une nouvelle réservation d'entretien pour le <b>${new Date(reservation.disponibilite.dateDebut).toLocaleString('fr-FR')}</b>.</p>
+          <p>Consultez votre tableau de bord pour plus de détails.</p>`
+      });
+    } catch (e) {
+      console.error('Erreur lors de l\'envoi de l\'email de notification:', e);
+    }
+
     return NextResponse.json(
       {
         message: "Réservation créée avec succès",
@@ -200,13 +236,17 @@ export async function POST(request: NextRequest) {
 // PATCH - Update reservation (for status TERMINEE, enseignant can set result)
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    console.log('[PATCH] Handler called');
     const session = await getServerSession(authOptions);
     if (!session) {
+      console.log('[PATCH] No session');
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
     const { id } = params;
     const body = await request.json();
+    console.log('[PATCH] Request body:', body);
     const { status, result } = body;
+    console.log('[PATCH] session.user:', session.user);
 
     // Find the reservation with enseignant info
     const reservation = await prisma.reservation.findUnique({
@@ -220,16 +260,20 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         }
       }
     });
+    console.log('[PATCH] Reservation found:', reservation);
 
     if (!reservation) {
+      console.log('[PATCH] Reservation not found');
       return NextResponse.json({ error: "Réservation non trouvée" }, { status: 404 });
     }
 
     // Check if user is the enseignant or the candidate
     const isEnseignant = reservation.disponibilite.enseignant.id === session.user.id;
     const isCandidat = reservation.id_Candidat === session.user.id;
+    console.log('[PATCH] status:', status, 'isEnseignant:', isEnseignant, 'isCandidat:', isCandidat, 'session.user.id:', session.user.id);
 
     if (!isEnseignant && !isCandidat) {
+      console.log('[PATCH] Not authorized');
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
@@ -242,6 +286,16 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       const updated = await prisma.reservation.update({
         where: { id },
         data: { status, result },
+      });
+
+      // Notify candidate of result
+      await prisma.notification.create({
+        data: {
+          userId: reservation.id_Candidat,
+          type: 'reservation_result',
+          message: `Votre entretien a été terminé. Résultat: ${result === 'ACCEPTER' ? 'Accepté' : 'Refusé'}.`,
+          link: '/calendar/candidate',
+        }
       });
 
       console.log(`[PATCH /api/reservation/[id]] Enseignant set result: ${result} for candidate: ${reservation.candidat.email}`);
@@ -270,6 +324,80 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ reservation: updated });
     }
 
+    // If enseignant is confirming the reservation
+    if (isEnseignant && status === "CONFIRMEE") {
+      console.log('[PATCH] Enseignant is confirming reservation');
+      // Generate or set the Google Meet link (placeholder for now)
+      const meetLink = "https://meet.google.com/your-meeting-link";
+      const updated = await prisma.reservation.update({
+        where: { id },
+        data: { status, meetLink },
+        include: {
+          candidat: true,
+          disponibilite: { include: { enseignant: true } }
+        }
+      });
+      console.log('[PATCH] Reservation updated:', updated);
+
+      // Notify candidat in-app
+      const notifCandidat = await prisma.notification.create({
+        data: {
+          userId: updated.id_Candidat,
+          type: 'reservation_confirmed',
+          message: `Votre réservation a été confirmée. Lien Google Meet: ${meetLink}`,
+          link: meetLink,
+        }
+      });
+      console.log('[NOTIF] Notification sent to candidat:', notifCandidat);
+
+      // Notify enseignant in-app
+      const notifEnseignant = await prisma.notification.create({
+        data: {
+          userId: updated.disponibilite.enseignant.id,
+          type: 'reservation_confirmed',
+          message: `Vous avez confirmé une réservation. Lien Google Meet: ${meetLink}`,
+          link: meetLink,
+        }
+      });
+      console.log('[NOTIF] Notification sent to enseignant:', notifEnseignant);
+
+      // Send emails to both users
+      try {
+        await sendMail({
+          to: updated.candidat.email,
+          subject: 'Votre réservation a été confirmée',
+          html: `<p>Bonjour ${updated.candidat.prenom || updated.candidat.name || ''},</p>
+            <p>Votre réservation a été confirmée.</p>
+            <p>Lien Google Meet: <a href="${meetLink}">${meetLink}</a></p>`
+        });
+        await sendMail({
+          to: updated.disponibilite.enseignant.email,
+          subject: 'Vous avez confirmé une réservation',
+          html: `<p>Bonjour ${updated.disponibilite.enseignant.prenom || updated.disponibilite.enseignant.name || ''},</p>
+            <p>Vous avez confirmé une réservation.</p>
+            <p>Lien Google Meet: <a href="${meetLink}">${meetLink}</a></p>`
+        });
+        console.log('[MAIL] Emails sent to both users');
+      } catch (e) {
+        console.error('Erreur lors de l\'envoi de l\'email de confirmation:', e);
+      }
+
+      return NextResponse.json({ reservation: updated });
+    }
+
+    // Fallback: log and create a debug notification if CONFIRMEE block is not hit
+    if (isEnseignant && status) {
+      console.log('[DEBUG] PATCH called by enseignant with status:', status);
+      await prisma.notification.create({
+        data: {
+          userId: reservation.disponibilite.enseignant.id,
+          type: 'debug_patch_status',
+          message: `DEBUG: PATCH called with status: ${status}`,
+          link: '/calendar/reservations',
+        }
+      });
+    }
+
     // For other updates (like cancellation), only allow the candidate
     if (!isCandidat) {
       return NextResponse.json({ error: "Seul le candidat peut modifier cette réservation" }, { status: 403 });
@@ -279,6 +407,27 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       where: { id },
       data: { status },
     });
+
+    // Notify candidate of status change (except when candidate cancels)
+    if (isCandidat) {
+      await prisma.notification.create({
+        data: {
+          userId: reservation.id_Candidat,
+          type: 'reservation_status',
+          message: `Le statut de votre réservation a changé: ${status}.`,
+          link: '/calendar/candidate',
+        }
+      });
+      // Notify enseignant of candidate's action (cancellation or change)
+      await prisma.notification.create({
+        data: {
+          userId: reservation.disponibilite.enseignant.id,
+          type: 'reservation_status',
+          message: `Le candidat a ${status === 'ANNULEE' ? 'annulé' : 'modifié'} la réservation.`,
+          link: '/calendar/reservations',
+        }
+      });
+    }
 
     return NextResponse.json({ reservation: updated });
   } catch (error) {

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { sendMail } from "@/lib/sendMail";
+import { createMeetEvent } from '@/lib/googleMeet';
 
 // PUT - Update reservation status (for Enseignant to confirm/cancel)
 export async function PUT(
@@ -36,6 +38,12 @@ export async function PUT(
         disponibilite: {
           id_Enseignant: session.user.id
         }
+      },
+      include: {
+        candidat: true,
+        disponibilite: {
+          include: { enseignant: true }
+        }
       }
     });
 
@@ -46,26 +54,99 @@ export async function PUT(
       );
     }
 
+    // For CONFIRMEE, add meetLink
+    let updateData: any = { status };
+    let meetLink = undefined;
+    if (status === "CONFIRMEE") {
+      try {
+        meetLink = await createMeetEvent({
+          summary: "Entretien de réservation",
+          description: "Entretien entre enseignant et candidat.",
+          start: existingReservation.disponibilite.dateDebut.toISOString(),
+          end: existingReservation.disponibilite.dateFin.toISOString(),
+          attendees: [
+            { email: existingReservation.candidat.email },
+            { email: existingReservation.disponibilite.enseignant.email }
+          ]
+        });
+      } catch (e) {
+        console.error("Failed to create Google Meet event:", e);
+        meetLink = "https://meet.google.com/"; // fallback
+      }
+      updateData.meetLink = meetLink;
+    }
+
     const reservation = await prisma.reservation.update({
       where: { id: id },
-      data: { status },
+      data: updateData,
       include: {
-        candidat: {
-          select: {
-            nom: true,
-            prenom: true,
-            email: true,
-            specialite: true
-          }
-        },
+        candidat: true,
         disponibilite: {
-          select: {
-            dateDebut: true,
-            dateFin: true
-          }
+          include: { enseignant: true }
         }
       }
     });
+
+    // Notification messages by status
+    const statusMessages: Record<string, { candidat: string; enseignant: string }> = {
+      EN_ATTENTE: {
+        candidat: "Votre réservation est en attente de confirmation.",
+        enseignant: "Une réservation est en attente de votre confirmation."
+      },
+      CONFIRMEE: {
+        candidat: `Votre réservation a été confirmée. Lien Google Meet: ${meetLink}`,
+        enseignant: `Vous avez confirmé une réservation. Lien Google Meet: ${meetLink}`
+      },
+      ANNULEE: {
+        candidat: "Votre réservation a été annulée.",
+        enseignant: "Une réservation a été annulée."
+      },
+      TERMINEE: {
+        candidat: "Votre entretien a été terminé.",
+        enseignant: "Vous avez terminé un entretien."
+      }
+    };
+
+    // Notify candidat
+    await prisma.notification.create({
+      data: {
+        userId: reservation.id_Candidat,
+        type: `reservation_${status.toLowerCase()}`,
+        message: statusMessages[status].candidat,
+        link: meetLink || undefined,
+      }
+    });
+    // Notify enseignant
+    await prisma.notification.create({
+      data: {
+        userId: reservation.disponibilite.enseignant.id,
+        type: `reservation_${status.toLowerCase()}`,
+        message: statusMessages[status].enseignant,
+        link: meetLink || undefined,
+      }
+    });
+
+    // Send emails for CONFIRMEE
+    if (status === "CONFIRMEE") {
+      try {
+        await sendMail({
+          to: reservation.candidat.email,
+          subject: 'Votre réservation a été confirmée',
+          html: `<p>Bonjour ${reservation.candidat.prenom || reservation.candidat.name || ''},</p>
+            <p>Votre réservation a été confirmée.</p>
+            <p>Lien Google Meet: <a href="${meetLink}">${meetLink}</a></p>`
+        });
+        await sendMail({
+          to: reservation.disponibilite.enseignant.email,
+          subject: 'Vous avez confirmé une réservation',
+          html: `<p>Bonjour ${reservation.disponibilite.enseignant.prenom || reservation.disponibilite.enseignant.name || ''},</p>
+            <p>Vous avez confirmé une réservation.</p>
+            <p>Lien Google Meet: <a href="${meetLink}">${meetLink}</a></p>`
+        });
+      } catch (e) {
+        console.error('Erreur lors de l\'envoi de l\'email de confirmation:', e);
+      }
+    }
 
     return NextResponse.json(
       { 

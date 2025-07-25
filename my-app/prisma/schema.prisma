@@ -35,6 +35,7 @@ model User {
   // Relations
   disponibilites Disponibilite[] @relation("EnseignantDisponibilites")
   reservations   Reservation[]    @relation("CandidatReservations")
+  notifications  Notification[]
 }
 
 model Disponibilite {
@@ -58,10 +59,22 @@ model Reservation {
   result           ReservationResult @default(EN_ATTENTE)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
+  meetLink         String?          // Google Meet link
 
   // Relations
   candidat         User           @relation("CandidatReservations", fields: [id_Candidat], references: [id], onDelete: Cascade)
   disponibilite    Disponibilite  @relation("DisponibiliteReservations", fields: [id_Disponibilite], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
