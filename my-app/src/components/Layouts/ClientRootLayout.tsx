@@ -57,7 +57,7 @@ function getSidebarLinks(role: string | undefined): SidebarLink[] {
         { href: "/calendar/stats", label: "Statistiques", icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v18h18" /><rect x="7" y="13" width="2" height="5" rx="1" /><rect x="11" y="9" width="2" height="9" rx="1" /><rect x="15" y="6" width="2" height="12" rx="1" /></svg>
         ) },
-        { href: "/calendar/reservations", label: "Historique", icon: (
+        { href: "/calendar/reservations", label: "Mes entretiens", icon: (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19a7 7 0 100-14 7 7 0 000 14z" /></svg>
         ) },
       ];

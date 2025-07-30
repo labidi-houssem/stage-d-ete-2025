@@ -35,6 +35,12 @@ export default function ReservationsPage() {
   const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
   const [selectedResult, setSelectedResult] = useState<string>("");
   const [managingResult, setManagingResult] = useState(false);
+  // For meet link confirmation
+  const [meetLinkModalOpen, setMeetLinkModalOpen] = useState(false);
+  const [meetLinkInput, setMeetLinkInput] = useState("");
+  const [reservationToConfirm, setReservationToConfirm] = useState<Reservation | null>(null);
+  // Add a new state to track the status being set
+  const [statusToSet, setStatusToSet] = useState<string>("");
 
   useEffect(() => {
     if (status === "loading") return;
@@ -139,6 +145,38 @@ export default function ReservationsPage() {
     setSelectedReservation(reservation);
     setSelectedResult("");
     setResultModalOpen(true);
+  };
+
+  const openMeetLinkModal = (reservation: Reservation) => {
+    setReservationToConfirm(reservation);
+    setMeetLinkInput("");
+    setMeetLinkModalOpen(true);
+  };
+
+  const handleConfirmWithMeetLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reservationToConfirm) return;
+    setUpdating(reservationToConfirm.id);
+    try {
+      const response = await fetch(`/api/reservation/${reservationToConfirm.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CONFIRMEE", meetLink: meetLinkInput }),
+      });
+      if (response.ok) {
+        alert("Réservation confirmée !");
+        fetchReservations();
+        setMeetLinkModalOpen(false);
+        setReservationToConfirm(null);
+      } else {
+        const error = await response.json();
+        alert(`❌ ${error.error}`);
+      }
+    } catch (error) {
+      alert("❌ Erreur lors de la confirmation");
+    } finally {
+      setUpdating(null);
+    }
   };
 
   const getResultDisplay = (reservation: Reservation) => {
@@ -383,21 +421,29 @@ export default function ReservationsPage() {
                       <select
                         value=""
                         onChange={(e) => {
-                          if (e.target.value) {
-                            updateReservationStatus(reservation.id, e.target.value);
+                          const newStatus = e.target.value;
+                          if (!newStatus) return;
+                          if (newStatus === "ANNULEE" || newStatus === "TERMINEE") {
+                            updateReservationStatus(reservation.id, newStatus);
+                          } else {
+                            setReservationToConfirm(reservation);
+                            setStatusToSet(newStatus);
+                            setMeetLinkInput("");
+                            setMeetLinkModalOpen(true);
                           }
                         }}
                         disabled={updating === reservation.id}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 bg-white"
+                        className="mt-2"
                       >
-                        <option value="">Changer statut</option>
-                        {getStatusOptions(reservation.status).map((status) => (
-                          <option key={status} value={status}>
-                            {status.replace("_", " ")}
-                          </option>
+                        <option value="">Changer le statut</option>
+                        {getStatusOptions(reservation.status).map((option) => (
+                          <option key={option} value={option}>{option.replace("_", " ")}</option>
                         ))}
                       </select>
                     )}
+
+                    {/* Meet Link Confirmation Button for EN_ATTENTE reservations */}
+                    
                   </div>
                 </div>
               </div>
@@ -515,6 +561,72 @@ export default function ReservationsPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Meet Link Confirmation Modal */}
+      {meetLinkModalOpen && reservationToConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!reservationToConfirm) return;
+                setUpdating(reservationToConfirm.id);
+                try {
+                  const response = await fetch(`/api/reservation/${reservationToConfirm.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: statusToSet, meetLink: meetLinkInput }),
+                  });
+                  if (response.ok) {
+                    alert("Statut mis à jour avec succès !");
+                    fetchReservations();
+                    setMeetLinkModalOpen(false);
+                    setReservationToConfirm(null);
+                    setStatusToSet("");
+                  } else {
+                    const error = await response.json();
+                    alert(`❌ ${error.error}`);
+                  }
+                } catch (error) {
+                  alert("❌ Erreur lors de la mise à jour du statut");
+                } finally {
+                  setUpdating(null);
+                }
+              }}
+              className="p-6"
+            >
+              <h2 className="text-xl font-semibold mb-4">Changer le statut de la réservation</h2>
+              <label className="block mb-4">
+                Lien de réunion :
+                <input
+                  type="url"
+                  required
+                  value={meetLinkInput}
+                  onChange={e => setMeetLinkInput(e.target.value)}
+                  placeholder="https://..."
+                  className="border p-2 rounded w-full mt-2"
+                />
+              </label>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setMeetLinkModalOpen(false); setStatusToSet(""); }}
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={updating === reservationToConfirm.id}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {updating === reservationToConfirm.id ? "Mise à jour..." : "Valider"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

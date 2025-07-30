@@ -22,7 +22,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+    const { status, meetLink } = body;
 
     if (!status || !["EN_ATTENTE", "CONFIRMEE", "ANNULEE", "TERMINEE"].includes(status)) {
       return NextResponse.json(
@@ -56,23 +56,7 @@ export async function PUT(
 
     // For CONFIRMEE, add meetLink
     let updateData: any = { status };
-    let meetLink = undefined;
-    if (status === "CONFIRMEE") {
-      try {
-        meetLink = await createMeetEvent({
-          summary: "Entretien de réservation",
-          description: "Entretien entre enseignant et candidat.",
-          start: existingReservation.disponibilite.dateDebut.toISOString(),
-          end: existingReservation.disponibilite.dateFin.toISOString(),
-          attendees: [
-            { email: existingReservation.candidat.email },
-            { email: existingReservation.disponibilite.enseignant.email }
-          ]
-        });
-      } catch (e) {
-        console.error("Failed to create Google Meet event:", e);
-        meetLink = "https://meet.google.com/"; // fallback
-      }
+    if (status === "CONFIRMEE" && meetLink) {
       updateData.meetLink = meetLink;
     }
 
@@ -94,8 +78,8 @@ export async function PUT(
         enseignant: "Une réservation est en attente de votre confirmation."
       },
       CONFIRMEE: {
-        candidat: `Votre réservation a été confirmée. Lien Google Meet: ${meetLink}`,
-        enseignant: `Vous avez confirmé une réservation. Lien Google Meet: ${meetLink}`
+        candidat: `Votre réservation a été confirmée. Lien Google Meet: ${reservation.meetLink || meetLink || ''}`,
+        enseignant: `Vous avez confirmé une réservation. Lien Google Meet: ${reservation.meetLink || meetLink || ''}`
       },
       ANNULEE: {
         candidat: "Votre réservation a été annulée.",
@@ -134,14 +118,14 @@ export async function PUT(
           subject: 'Votre réservation a été confirmée',
           html: `<p>Bonjour ${reservation.candidat.prenom || reservation.candidat.name || ''},</p>
             <p>Votre réservation a été confirmée.</p>
-            <p>Lien Google Meet: <a href="${meetLink}">${meetLink}</a></p>`
+            <p>Lien Google Meet: <a href="${reservation.meetLink || meetLink || ''}">${reservation.meetLink || meetLink || ''}</a></p>`
         });
         await sendMail({
           to: reservation.disponibilite.enseignant.email,
           subject: 'Vous avez confirmé une réservation',
           html: `<p>Bonjour ${reservation.disponibilite.enseignant.prenom || reservation.disponibilite.enseignant.name || ''},</p>
             <p>Vous avez confirmé une réservation.</p>
-            <p>Lien Google Meet: <a href="${meetLink}">${meetLink}</a></p>`
+            <p>Lien Google Meet: <a href="${reservation.meetLink || meetLink || ''}">${reservation.meetLink || meetLink || ''}</a></p>`
         });
       } catch (e) {
         console.error('Erreur lors de l\'envoi de l\'email de confirmation:', e);
