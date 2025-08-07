@@ -1,7 +1,9 @@
 "use client";
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
+
 
 export type SidebarLink = {
   href: string;
@@ -13,10 +15,13 @@ interface SidebarProps {
   links: SidebarLink[];
   currentPath?: string;
   horizontal?: boolean;
+  dashboardIcon?: React.ReactNode; // <-- add this
 }
 
-export default function Sidebar({ links, currentPath, horizontal = false }: SidebarProps) {
+export default function Sidebar({ links, currentPath, horizontal = false, dashboardIcon }: SidebarProps) {
   const [open, setOpen] = useState(false);
+
+  const dashboardLink = links.find(link => link.label === "Dashboard");
 
   if (horizontal) {
     // Responsive horizontal bar: hamburger on mobile, row on desktop
@@ -84,17 +89,21 @@ export default function Sidebar({ links, currentPath, horizontal = false }: Side
         className={`fixed z-20 top-0 left-0 h-full w-64 bg-gradient-to-b from-red-600 via-white to-white shadow-xl flex flex-col rounded-r-3xl transition-transform duration-200 md:static md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
       >
         <div className="p-6 font-bold text-2xl text-white bg-black shadow flex items-center justify-between h-16">
-          Dashboard
+          <span className="flex items-center gap-2">
+            {dashboardIcon}
+            Dashboard
+          </span>
           <button
             className="md:hidden p-1 ml-2 rounded hover:bg-gray-100"
             onClick={() => setOpen(false)}
             aria-label="Fermer le menu"
           >
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         </div>
+
         <nav className="flex-1 mt-4 space-y-1 px-2">
           {links.map(link => (
             <Link
@@ -130,4 +139,8 @@ export default function Sidebar({ links, currentPath, horizontal = false }: Side
       )}
     </>
   );
-} 
+}
+
+/*<DashboardLayout links={sidebarLinks} dashboardIcon={dashboardLink?.icon}>
+  {children}
+</DashboardLayout>*/

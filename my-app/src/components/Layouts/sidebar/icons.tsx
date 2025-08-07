@@ -1,6 +1,6 @@
 import type { IconProps } from "@/types/icon-props";
 
-export function DashboardIcon(props: IconProps) {
+/*export function DashboardIcon(props: IconProps) {
   return (
     <svg
       width="18"
@@ -15,7 +15,7 @@ export function DashboardIcon(props: IconProps) {
       <path d="M15.4648 9.92188H11.8828C10.748 9.92188 9.81055 10.8594 9.81055 11.9941V15.5762C9.81055 16.7109 10.748 17.6484 11.8828 17.6484H15.4648C16.5996 17.6484 17.5371 16.7109 17.5371 15.5762V11.9941C17.5371 10.8594 16.5996 9.92188 15.4648 9.92188Z" />
     </svg>
   );
-}
+}*/
 
 export function MenuIcon(props: IconProps) {
   return (
