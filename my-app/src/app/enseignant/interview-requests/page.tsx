@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import TimePicker from "@/components/FormElements/DatePicker/TimePicker";
 
 interface InterviewRequest {
   id: string;
@@ -26,7 +27,8 @@ export default function InterviewRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<InterviewRequest | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [dateTime, setDateTime] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -64,20 +66,22 @@ export default function InterviewRequestsPage() {
 
   const handleAcceptRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedRequest || !dateTime || !meetingLink) return;
+    if (!selectedRequest || !selectedDate || !selectedTime || !meetingLink) return;
 
     setSubmitting(true);
     setError("");
     setSuccess("");
 
     try {
+      const combinedDateTime = `${selectedDate}T${selectedTime}`;
+
       const res = await fetch("/api/enseignant/accept-interview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           requestId: selectedRequest.id,
           candidateId: selectedRequest.candidate.id,
-          dateTime,
+          dateTime: combinedDateTime,
           meetingLink
         }),
       });
@@ -86,7 +90,8 @@ export default function InterviewRequestsPage() {
         setSuccess("Entretien confirmé avec succès !");
         setModalOpen(false);
         setSelectedRequest(null);
-        setDateTime("");
+        setSelectedDate("");
+        setSelectedTime("");
         setMeetingLink("");
         fetchRequests(); // Refresh the list
       } else {
@@ -142,7 +147,8 @@ export default function InterviewRequestsPage() {
                       onClick={() => {
                         setSelectedRequest(request);
                         setModalOpen(true);
-                        setDateTime("");
+                        setSelectedDate("");
+                        setSelectedTime("");
                         setMeetingLink("");
                         setError("");
                         setSuccess("");
@@ -171,16 +177,30 @@ export default function InterviewRequestsPage() {
             </div>
             
             <form onSubmit={handleAcceptRequest} className="space-y-4">
-              <label className="block">
-                Date et heure de l'entretien :
-                <input
-                  type="datetime-local"
-                  required
-                  value={dateTime}
-                  onChange={(e) => setDateTime(e.target.value)}
-                  className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="block">
+                  Date de l'entretien :
+                  <input
+                    type="date"
+                    required
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  />
+                </label>
+
+                <label className="block">
+                  Heure de l'entretien :
+                  <div className="mt-2">
+                    <TimePicker
+                      name="time"
+                      value={selectedTime}
+                      onChange={(e) => setSelectedTime(e.target.value)}
+                      disabled={!selectedDate}
+                    />
+                  </div>
+                </label>
+              </div>
               
               <label className="block">
                 Lien de réunion :
@@ -203,7 +223,8 @@ export default function InterviewRequestsPage() {
                   onClick={() => {
                     setModalOpen(false);
                     setSelectedRequest(null);
-                    setDateTime("");
+                    setSelectedDate("");
+                    setSelectedTime("");
                     setMeetingLink("");
                     setError("");
                     setSuccess("");
@@ -214,7 +235,7 @@ export default function InterviewRequestsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting || !dateTime || !meetingLink}
+                  disabled={submitting || !selectedDate || !selectedTime || !meetingLink}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? "Confirmation..." : "Confirmer l'entretien"}

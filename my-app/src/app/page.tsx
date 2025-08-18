@@ -13,7 +13,7 @@ export default function LandingPage() {
         <div className="relative z-10 max-w-2xl mx-auto text-center flex flex-col items-center">
           <div className="mb-6 flex flex-col items-center">
             <Image
-              src="/images/logo/logo.jpg"
+              src="/images/logo/logo.png"
               alt="Logo"
               width={150}
               height={150}

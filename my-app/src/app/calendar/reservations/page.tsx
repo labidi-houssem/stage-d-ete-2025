@@ -41,6 +41,17 @@ export default function ReservationsPage() {
   const [reservationToConfirm, setReservationToConfirm] = useState<Reservation | null>(null);
   // Add a new state to track the status being set
   const [statusToSet, setStatusToSet] = useState<string>("");
+  const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
+  const [evalFields, setEvalFields] = useState({
+    francais: "",
+    anglais: "",
+    motivation: "",
+    cultureGenerale: "",
+    bonus: "",
+    noteSur100: "",
+    observation: "",
+    competence: "",
+  });
 
   useEffect(() => {
     if (status === "loading") return;
@@ -144,7 +155,7 @@ export default function ReservationsPage() {
   const openResultModal = (reservation: Reservation) => {
     setSelectedReservation(reservation);
     setSelectedResult("");
-    setResultModalOpen(true);
+    setEvaluationModalOpen(true);
   };
 
   const openMeetLinkModal = (reservation: Reservation) => {
@@ -362,10 +373,10 @@ export default function ReservationsPage() {
           {filteredReservations.length === 0 ? (
             <div className="px-6 py-8 text-center">
               <div className="text-gray-500 mb-4">
-                {filterStatus === "all" 
-                  ? "Aucun entretien réservé pour le moment" 
-                  : `Aucun entretien avec le statut "${filterStatus.replace("_", " ")}"`
-                }
+              {filterStatus === "all" 
+                ? "Aucun entretien réservé pour le moment" 
+                : `Aucun entretien avec le statut "${filterStatus.replace("_", " ")}"`
+              }
               </div>
               
               {/* Helpful guidance for enseignants */}
@@ -511,17 +522,15 @@ export default function ReservationsPage() {
         </button>
       </div>
 
-      {/* Result Management Modal */}
-      {resultModalOpen && selectedReservation && (
+      {/* Evaluation Modal */}
+      {evaluationModalOpen && selectedReservation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full">
+          <div className="bg-white rounded-lg max-w-2xl w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">
-                  Marquer l'entretien comme terminé
-                </h2>
+                <h2 className="text-xl font-semibold">Ajouter note d'entretien</h2>
                 <button
-                  onClick={() => setResultModalOpen(false)}
+                  onClick={() => setEvaluationModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700"
                 >
                   ✕
@@ -537,52 +546,130 @@ export default function ReservationsPage() {
                 </p>
               </div>
 
+              {/* Evaluation table */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Résultat de l'entretien
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="result"
-                      value="ACCEPTER"
-                      checked={selectedResult === "ACCEPTER"}
-                      onChange={(e) => setSelectedResult(e.target.value)}
-                      className="mr-2"
-                    />
-                    <span className="text-green-700">✅ Accepter le candidat</span>
-                    <span className="text-xs text-gray-500 ml-2">(Le rôle sera automatiquement mis à jour en ETUDIANT)</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="result"
-                      value="REFUSER"
-                      checked={selectedResult === "REFUSER"}
-                      onChange={(e) => setSelectedResult(e.target.value)}
-                      className="mr-2"
-                    />
-                    <span className="text-red-700">❌ Refuser le candidat</span>
-                    <span className="text-xs text-gray-500 ml-2">(Le candidat peut toujours accepter pour devenir ETUDIANT)</span>
-                  </label>
+                <div className="overflow-x-auto rounded-lg border">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qualité d'expression en français</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qualité d'expression en anglais</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motivation</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Culture Générale</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bonus</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note sur 100</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      <tr>
+                        <td className="px-4 py-3">
+                          <select className="w-full border rounded px-2 py-2" value={evalFields.francais} onChange={(e)=>setEvalFields(v=>({...v, francais:e.target.value}))}>
+                            <option value="">choisir</option>
+                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select className="w-full border rounded px-2 py-2" value={evalFields.anglais} onChange={(e)=>setEvalFields(v=>({...v, anglais:e.target.value}))}>
+                            <option value="">choisir</option>
+                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select className="w-full border rounded px-2 py-2" value={evalFields.motivation} onChange={(e)=>setEvalFields(v=>({...v, motivation:e.target.value}))}>
+                            <option value="">choisir</option>
+                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select className="w-full border rounded px-2 py-2" value={evalFields.cultureGenerale} onChange={(e)=>setEvalFields(v=>({...v, cultureGenerale:e.target.value}))}>
+                            <option value="">choisir</option>
+                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select className="w-full border rounded px-2 py-2" value={evalFields.bonus} onChange={(e)=>setEvalFields(v=>({...v, bonus:e.target.value}))}>
+                            <option value="">choisir</option>
+                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <input type="number" className="w-full border rounded px-2 py-2" placeholder="/100" value={evalFields.noteSur100} onChange={(e)=>setEvalFields(v=>({...v, noteSur100:e.target.value}))}/>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colSpan={6} className="px-4 py-3">
+                          <label className="block text-sm text-gray-600 mb-2">Observation</label>
+                          <textarea className="w-full border rounded px-3 py-2" rows={3} value={evalFields.observation} onChange={(e)=>setEvalFields(v=>({...v, observation:e.target.value}))}/>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setResultModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  onClick={() => handleMarkAsTerminee(selectedReservation.id, selectedResult)}
-                  disabled={!selectedResult || managingResult}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {managingResult ? "Mise à jour..." : "Confirmer"}
-                </button>
+              <div className="mb-6">
+                <p className="font-medium text-gray-700 mb-2">Veuillez choisir une compétence:</p>
+                <div className="flex flex-wrap gap-4 text-sm text-gray-700">
+                  {[
+                    { key: "CULTURE", label: "Culture" },
+                    { key: "ART", label: "Art" },
+                    { key: "EXPERIENCE_ONG", label: "Expérience ONG" },
+                    { key: "SPORT", label: "Sport" },
+                    { key: "AUCUNE", label: "Aucune activité" },
+                  ].map(opt => (
+                    <label key={opt.key} className="inline-flex items-center gap-2">
+                      <input type="radio" name="competence" value={opt.key} checked={evalFields.competence===opt.key} onChange={(e)=>setEvalFields(v=>({...v, competence:e.target.value}))} />
+                      {opt.label}
+                </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div className="text-xs text-gray-500">Vous pouvez enregistrer l'évaluation sans décider Accepter/Refuser maintenant.</div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEvaluationModalOpen(false)}
+                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!selectedReservation) return;
+                      const res = await fetch(`/api/reservation/${selectedReservation.id}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          francais: evalFields.francais ? Number(evalFields.francais) : null,
+                          anglais: evalFields.anglais ? Number(evalFields.anglais) : null,
+                          motivation: evalFields.motivation ? Number(evalFields.motivation) : null,
+                          cultureGenerale: evalFields.cultureGenerale ? Number(evalFields.cultureGenerale) : null,
+                          bonus: evalFields.bonus ? Number(evalFields.bonus) : null,
+                          noteSur100: evalFields.noteSur100 ? Number(evalFields.noteSur100) : null,
+                          observation: evalFields.observation || null,
+                          competence: evalFields.competence || null,
+                        })
+                      });
+                      if (res.ok) {
+                        // Also mark reservation as TERMINEE
+                        await fetch(`/api/reservation/${selectedReservation.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'TERMINEE', result: selectedResult || 'EN_ATTENTE' })
+                        });
+                        setEvaluationModalOpen(false);
+                        fetchReservations();
+                      } else {
+                        const err = await res.json();
+                        alert(`Erreur: ${err.error || 'Impossible d\'enregistrer'}`);
+                      }
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Enregistrer l'évaluation
+                  </button>
+                </div>
               </div>
             </div>
           </div>

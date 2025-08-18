@@ -98,7 +98,7 @@ export default function Header() {
   return (
     <header className="w-full h-16 bg-red-600 shadow flex items-center justify-between px-6 border-b z-10">
       <div className="flex items-center gap-2">
-        <Image src="/images/logo/logo.jpg" alt="Logo" width={100} height={100} className="rounded mr-2" />
+        <Image src="/images/logo/logo.png" alt="Logo" width={100} height={100} className="rounded mr-2" />
       </div>
       <div className="flex items-center gap-4 relative">
         <span className="text-white text-sm font-semibold">Bienvenue !</span>

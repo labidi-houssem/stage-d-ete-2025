@@ -183,21 +183,22 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
-    // If enseignant is updating status to TERMINEE, they can set the result
+    // If enseignant is updating status to TERMINEE, they can set the result, but it's optional
     if (isEnseignant && status === "TERMINEE") {
-      if (!result || (result !== "ACCEPTER" && result !== "REFUSER")) {
-        return NextResponse.json({ error: "Résultat requis: ACCEPTER ou REFUSER" }, { status: 400 });
+      let finalResult = result;
+      if (!finalResult || (finalResult !== "ACCEPTER" && finalResult !== "REFUSER")) {
+        finalResult = "EN_ATTENTE"; // allow evaluation without immediate decision
       }
 
       const updated = await prisma.reservation.update({
         where: { id },
-        data: { status, result },
+        data: { status, result: finalResult },
       });
 
-      console.log(`[PATCH /api/reservation/[id]] Enseignant set result: ${result} for candidate: ${reservation.candidat.email}`);
+      console.log(`[PATCH /api/reservation/[id]] Enseignant set status TERMINEE with result: ${finalResult} for candidate: ${reservation.candidat.email}`);
       
       // If enseignant accepts the candidate, update role to ETUDIANT immediately
-      if (result === "ACCEPTER") {
+      if (finalResult === "ACCEPTER") {
         console.log("[PATCH /api/reservation/[id]] Enseignant accepted candidate, updating to ETUDIANT:", reservation.candidat.id, reservation.candidat.email);
         await prisma.user.update({ 
           where: { id: reservation.candidat.id }, 
@@ -321,5 +322,76 @@ export async function GET(
       { error: "Erreur lors de la récupération de la réservation" },
       { status: 500 }
     );
+  }
+} 
+
+// POST - Upsert interview evaluation for a reservation (enseignant only)
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== "ENSEIGNANT") {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+    const {
+      francais,
+      anglais,
+      motivation,
+      cultureGenerale,
+      bonus,
+      noteSur100,
+      observation,
+      competence,
+    } = body;
+
+    // Verify the reservation belongs to this enseignant
+    const reservation = await prisma.reservation.findUnique({
+      where: { id },
+      include: { disponibilite: true, candidat: true },
+    });
+    if (!reservation) {
+      return NextResponse.json({ error: "Réservation non trouvée" }, { status: 404 });
+    }
+    if (reservation.disponibilite.id_Enseignant !== session.user.id) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    }
+
+    // Upsert evaluation
+    const evaluation = await prisma.interviewEvaluation.upsert({
+      where: { reservationId: id },
+      update: {
+        francais,
+        anglais,
+        motivation,
+        cultureGenerale,
+        bonus,
+        noteSur100,
+        observation,
+        competence,
+      },
+      create: {
+        reservationId: id,
+        enseignantId: session.user.id,
+        candidatId: reservation.id_Candidat,
+        francais,
+        anglais,
+        motivation,
+        cultureGenerale,
+        bonus,
+        noteSur100,
+        observation,
+        competence,
+      },
+    });
+
+    return NextResponse.json({ evaluation });
+  } catch (error) {
+    console.error("[POST /api/reservation/[id]] evaluation error:", error);
+    return NextResponse.json({ error: "Erreur lors de l'enregistrement de l'évaluation" }, { status: 500 });
   }
 } 
