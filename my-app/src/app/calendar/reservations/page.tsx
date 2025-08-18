@@ -360,11 +360,35 @@ export default function ReservationsPage() {
         
         <div className="divide-y divide-gray-200">
           {filteredReservations.length === 0 ? (
-            <div className="px-6 py-8 text-center text-gray-500">
-              {filterStatus === "all" 
-                ? "Aucun entretien réservé pour le moment" 
-                : `Aucun entretien avec le statut "${filterStatus.replace("_", " ")}"`
-              }
+            <div className="px-6 py-8 text-center">
+              <div className="text-gray-500 mb-4">
+                {filterStatus === "all" 
+                  ? "Aucun entretien réservé pour le moment" 
+                  : `Aucun entretien avec le statut "${filterStatus.replace("_", " ")}"`
+                }
+              </div>
+              
+              {/* Helpful guidance for enseignants */}
+              {filterStatus === "all" && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+                  <h3 className="text-blue-800 font-semibold mb-2">💡 Comment voir mes entretiens ?</h3>
+                  <p className="text-blue-700 text-sm mb-3">
+                    Pour voir vos entretiens ici, vous devez d'abord accepter les demandes d'entretien envoyées par l'admin.
+                  </p>
+                  <div className="space-y-2 text-sm text-blue-600">
+                    <div>1️⃣ Allez dans <strong>"Demandes d'entretien"</strong></div>
+                    <div>2️⃣ Acceptez les demandes en attente</div>
+                    <div>3️⃣ Choisissez une date/heure et lien de réunion</div>
+                    <div>4️⃣ Vos entretiens apparaîtront ici</div>
+                  </div>
+                  <button
+                    onClick={() => router.push("/enseignant/interview-requests")}
+                    className="mt-3 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Voir les demandes d'entretien
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             filteredReservations.map((reservation) => (

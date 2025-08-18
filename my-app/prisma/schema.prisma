@@ -8,62 +8,57 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String?
-  name          String?
-  image         String?
-  emailVerified DateTime?
-  role          UserRole  @default(CANDIDAT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Additional fields from your signup form
-  cin           String?   @unique
-  nom           String?
-  prenom        String?
-  telephone     String?
-  dateDelivrance DateTime?
-  lieuDelivrance String?
-  address       String?
-  nationalite   String?
-  civilite      String?
-  dateNaissance DateTime?
-  gouvernorat   String?
-  specialite    String?
-
-  // Relations
-  disponibilites Disponibilite[] @relation("EnseignantDisponibilites")
-  reservations   Reservation[]    @relation("CandidatReservations")
-  notifications  Notification[]
+  id                           String             @id @default(cuid())
+  email                        String             @unique
+  password                     String?
+  name                         String?
+  image                        String?
+  emailVerified                DateTime?
+  createdAt                    DateTime           @default(now())
+  updatedAt                    DateTime           @updatedAt
+  cin                          String?            @unique
+  nom                          String?
+  prenom                       String?
+  telephone                    String?
+  dateDelivrance               DateTime?
+  lieuDelivrance               String?
+  address                      String?
+  nationalite                  String?
+  civilite                     String?
+  dateNaissance                DateTime?
+  gouvernorat                  String?
+  specialite                   String?
+  role                         UserRole           @default(CANDIDAT)
+  disponibilites               Disponibilite[]    @relation("EnseignantDisponibilites")
+  interviewRequestsSent        InterviewRequest[] @relation("AdminInterviewRequests")
+  interviewRequestsAsCandidate InterviewRequest[] @relation("CandidateInterviewRequests")
+  interviewRequestsReceived    InterviewRequest[] @relation("EnseignantInterviewRequests")
+  notifications                Notification[]
+  reservations                 Reservation[]      @relation("CandidatReservations")
 }
 
 model Disponibilite {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   id_Enseignant String
   dateDebut     DateTime
   dateFin       DateTime
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   enseignant    User          @relation("EnseignantDisponibilites", fields: [id_Enseignant], references: [id], onDelete: Cascade)
   reservations  Reservation[] @relation("DisponibiliteReservations")
 }
 
 model Reservation {
-  id               String           @id @default(cuid())
+  id               String            @id @default(cuid())
   id_Candidat      String
   id_Disponibilite String
   status           ReservationStatus @default(EN_ATTENTE)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   result           ReservationResult @default(EN_ATTENTE)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  meetLink         String?          // Google Meet link
-
-  // Relations
-  candidat         User           @relation("CandidatReservations", fields: [id_Candidat], references: [id], onDelete: Cascade)
-  disponibilite    Disponibilite  @relation("DisponibiliteReservations", fields: [id_Disponibilite], references: [id], onDelete: Cascade)
+  meetLink         String?
+  candidat         User              @relation("CandidatReservations", fields: [id_Candidat], references: [id], onDelete: Cascade)
+  disponibilite    Disponibilite     @relation("DisponibiliteReservations", fields: [id_Disponibilite], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -75,6 +70,21 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model InterviewRequest {
+  id            String                 @id @default(cuid())
+  adminId       String
+  enseignantId  String
+  candidateId   String
+  status        InterviewRequestStatus @default(PENDING)
+  dateEntretien DateTime?
+  meetLink      String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  admin         User                   @relation("AdminInterviewRequests", fields: [adminId], references: [id], onDelete: Cascade)
+  candidate     User                   @relation("CandidateInterviewRequests", fields: [candidateId], references: [id], onDelete: Cascade)
+  enseignant    User                   @relation("EnseignantInterviewRequests", fields: [enseignantId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
@@ -95,4 +105,11 @@ enum ReservationResult {
   EN_ATTENTE
   ACCEPTER
   REFUSER
+}
+
+enum InterviewRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
 }
