@@ -8,15 +8,15 @@ datasource db {
 }
 
 model User {
-  id                           String             @id @default(cuid())
-  email                        String             @unique
+  id                           String                @id @default(cuid())
+  email                        String                @unique
   password                     String?
   name                         String?
   image                        String?
   emailVerified                DateTime?
-  createdAt                    DateTime           @default(now())
-  updatedAt                    DateTime           @updatedAt
-  cin                          String?            @unique
+  createdAt                    DateTime              @default(now())
+  updatedAt                    DateTime              @updatedAt
+  cin                          String?               @unique
   nom                          String?
   prenom                       String?
   telephone                    String?
@@ -28,16 +28,15 @@ model User {
   dateNaissance                DateTime?
   gouvernorat                  String?
   specialite                   String?
-  role                         UserRole           @default(CANDIDAT)
-  disponibilites               Disponibilite[]    @relation("EnseignantDisponibilites")
-  interviewRequestsSent        InterviewRequest[] @relation("AdminInterviewRequests")
-  interviewRequestsAsCandidate InterviewRequest[] @relation("CandidateInterviewRequests")
-  interviewRequestsReceived    InterviewRequest[] @relation("EnseignantInterviewRequests")
-  notifications                Notification[]
-  reservations                 Reservation[]      @relation("CandidatReservations")
-  // Back-relations for evaluations
-  evaluationsAsEnseignant      InterviewEvaluation[] @relation("EvaluationEnseignant")
+  role                         UserRole              @default(CANDIDAT)
+  disponibilites               Disponibilite[]       @relation("EnseignantDisponibilites")
   evaluationsAsCandidat        InterviewEvaluation[] @relation("EvaluationCandidat")
+  evaluationsAsEnseignant      InterviewEvaluation[] @relation("EvaluationEnseignant")
+  interviewRequestsSent        InterviewRequest[]    @relation("AdminInterviewRequests")
+  interviewRequestsAsCandidate InterviewRequest[]    @relation("CandidateInterviewRequests")
+  interviewRequestsReceived    InterviewRequest[]    @relation("EnseignantInterviewRequests")
+  notifications                Notification[]
+  reservations                 Reservation[]         @relation("CandidatReservations")
 }
 
 model Disponibilite {
@@ -52,18 +51,17 @@ model Disponibilite {
 }
 
 model Reservation {
-  id               String            @id @default(cuid())
+  id               String               @id @default(cuid())
   id_Candidat      String
   id_Disponibilite String
-  status           ReservationStatus @default(EN_ATTENTE)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  result           ReservationResult @default(EN_ATTENTE)
+  status           ReservationStatus    @default(EN_ATTENTE)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  result           ReservationResult    @default(EN_ATTENTE)
   meetLink         String?
-  candidat         User              @relation("CandidatReservations", fields: [id_Candidat], references: [id], onDelete: Cascade)
-  disponibilite    Disponibilite     @relation("DisponibiliteReservations", fields: [id_Disponibilite], references: [id], onDelete: Cascade)
-  // Optional one-to-one evaluation
   evaluation       InterviewEvaluation?
+  candidat         User                 @relation("CandidatReservations", fields: [id_Candidat], references: [id], onDelete: Cascade)
+  disponibilite    Disponibilite        @relation("DisponibiliteReservations", fields: [id_Disponibilite], references: [id], onDelete: Cascade)
 }
 
 model Notification {
@@ -92,7 +90,6 @@ model InterviewRequest {
   enseignant    User                   @relation("EnseignantInterviewRequests", fields: [enseignantId], references: [id], onDelete: Cascade)
 }
 
-// New: Interview evaluation attached to a reservation
 model InterviewEvaluation {
   id              String      @id @default(cuid())
   reservationId   String      @unique
@@ -108,10 +105,9 @@ model InterviewEvaluation {
   competence      Competence?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-
-  reservation     Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
-  enseignant      User        @relation("EvaluationEnseignant", fields: [enseignantId], references: [id], onDelete: Cascade)
   candidat        User        @relation("EvaluationCandidat", fields: [candidatId], references: [id], onDelete: Cascade)
+  enseignant      User        @relation("EvaluationEnseignant", fields: [enseignantId], references: [id], onDelete: Cascade)
+  reservation     Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
@@ -141,7 +137,6 @@ enum InterviewRequestStatus {
   CANCELLED
 }
 
-// New: Competence categories for evaluation
 enum Competence {
   CULTURE
   ART

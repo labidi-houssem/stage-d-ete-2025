@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     console.log("Fetching interview requests...");
     
-    // Get all interview requests (assigned candidates) with detailed information
+    // Get all interview requests (assigned candidates) with detailed information and evaluations
     const interviewRequests = await prisma.interviewRequest.findMany({
       include: {
         candidate: {
@@ -50,26 +50,45 @@ export async function GET(request: NextRequest) {
 
     console.log("Found interview requests:", interviewRequests.length);
 
-    // Transform the data to match the frontend expectations
-    const candidates = interviewRequests.map(req => ({
-      id: req.candidate.id,
-      name: req.candidate.name,
-      email: req.candidate.email,
-      createdAt: req.createdAt,
-      specialite: req.candidate.specialite,
-      enseignant: {
-        id: req.enseignant.id,
-        name: req.enseignant.name,
-        email: req.enseignant.email,
-        specialite: req.enseignant.specialite
-      },
-      status: req.status,
-      dateEntretien: req.dateEntretien,
-      meetLink: req.meetLink,
-      requestCreatedAt: req.createdAt
-    }));
+    // Transform the data to match the frontend expectations and include evaluations
+    const candidates = await Promise.all(
+      interviewRequests.map(async (req) => {
+        // Find the reservation and evaluation for this interview request
+        const reservation = await prisma.reservation.findFirst({
+          where: {
+            id_Candidat: req.candidateId,
+            disponibilite: {
+              id_Enseignant: req.enseignantId
+            }
+          },
+          include: {
+            evaluation: true,
+            disponibilite: true
+          }
+        });
 
-    console.log("Transformed candidates:", candidates.length);
+        return {
+          id: req.candidate.id,
+          name: req.candidate.name,
+          email: req.candidate.email,
+          createdAt: req.createdAt,
+          specialite: req.candidate.specialite,
+          enseignant: {
+            id: req.enseignant.id,
+            name: req.enseignant.name,
+            email: req.enseignant.email,
+            specialite: req.enseignant.specialite
+          },
+          status: req.status,
+          dateEntretien: req.dateEntretien || reservation?.disponibilite?.dateDebut || null,
+          meetLink: req.meetLink || reservation?.meetLink || null,
+          requestCreatedAt: req.createdAt,
+          evaluation: reservation?.evaluation || null
+        };
+      })
+    );
+
+    console.log("Transformed candidates with evaluations:", candidates.length);
     console.log("Assigned candidates API completed successfully");
 
     return NextResponse.json({ candidates });

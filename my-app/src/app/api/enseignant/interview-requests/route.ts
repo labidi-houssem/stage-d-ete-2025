@@ -13,11 +13,11 @@ export async function GET(request: NextRequest) {
     const enseignantId = (session.user as any).id;
     console.log("Fetching interview requests for enseignant:", enseignantId);
 
-    // Get interview requests for this enseignant
+    // Get interview requests for this enseignant (both pending and accepted)
     const requests = await prisma.interviewRequest.findMany({
       where: {
         enseignantId,
-        status: "PENDING"
+        status: { in: ["PENDING", "ACCEPTED"] }
       },
       include: {
         candidate: {
@@ -40,7 +40,34 @@ export async function GET(request: NextRequest) {
 
     console.log("Found interview requests:", requests);
 
-    return NextResponse.json({ requests });
+    // For each request, check if there's an evaluation
+    const requestsWithEvaluations = await Promise.all(
+      requests.map(async (request) => {
+        // Find the reservation for this interview request
+        const reservation = await prisma.reservation.findFirst({
+          where: {
+            id_Candidat: request.candidateId,
+            disponibilite: {
+              id_Enseignant: enseignantId
+            }
+          },
+          include: {
+            evaluation: true
+          }
+        });
+
+        return {
+          ...request,
+          dateEntretien: reservation?.disponibilite?.dateDebut || null,
+          meetLink: reservation?.meetLink || null,
+          evaluation: reservation?.evaluation || null
+        };
+      })
+    );
+
+    console.log("Requests with evaluations:", requestsWithEvaluations);
+
+    return NextResponse.json({ requests: requestsWithEvaluations });
 
   } catch (error) {
     console.error("Error fetching interview requests:", error);
