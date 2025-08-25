@@ -88,7 +88,6 @@ export default function AdminDashboardPage() {
       const res = await fetch("/api/admin/enseignants-availabilities");
       if (res.ok) {
         const data = await res.json();
-        // Only show enseignants who have available slots
         const availableEnseignants = (data.enseignants || []).filter((e: any) => e.disponibilites.length > 0);
         setEnseignants(availableEnseignants);
       }
@@ -180,476 +179,603 @@ export default function AdminDashboardPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="mt-4 text-lg">Chargement du tableau de bord...</p>
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-red-600 border-r-transparent"></div>
+          <p className="mt-6 text-xl font-medium text-gray-700">Chargement du tableau de bord...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Tableau de Bord Administrateur
-        </h1>
-        <p className="text-gray-600">
-          Bienvenue, {session?.user?.name || session?.user?.email}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-3xl shadow-xl mb-6">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            Tableau de Bord Administrateur
+          </h1>
+          <p className="text-xl text-gray-600 mb-2">
+            Bienvenue, {session?.user?.name || session?.user?.email}
+          </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-red-700 mx-auto rounded-full"></div>
+        </div>
 
-      {/* Statistics Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Statistics Cards */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-blue-600">Total Utilisateurs</p>
+                  <p className="text-3xl font-bold text-blue-900">{stats.totalUsers}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-green-600">Total Réservations</p>
+                  <p className="text-3xl font-bold text-green-900">{stats.totalReservations}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-yellow-600">En Attente</p>
+                  <p className="text-3xl font-bold text-yellow-900">{stats.pendingReservations}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="flex items-center">
+                <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-purple-600">Terminées</p>
+                  <p className="text-3xl font-bold text-purple-900">{stats.completedReservations}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* User Statistics */}
+        {stats && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl border border-red-200 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center">
+                <div className="p-3 bg-red-200 rounded-xl">
+                  <span className="text-3xl">👑</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-red-700">Admins</p>
+                  <p className="text-3xl font-bold text-red-900">{stats.admins}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center">
+                <div className="p-3 bg-blue-200 rounded-xl">
+                  <span className="text-3xl">👨‍🏫</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-blue-700">Enseignants</p>
+                  <p className="text-3xl font-bold text-blue-900">{stats.enseignants}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center">
+                <div className="p-3 bg-green-200 rounded-xl">
+                  <span className="text-3xl">👤</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-green-700">Candidats</p>
+                  <p className="text-3xl font-bold text-green-900">{stats.candidats}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-2xl border border-yellow-200 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center">
+                <div className="p-3 bg-yellow-200 rounded-xl">
+                  <span className="text-3xl">🎓</span>
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-yellow-700">Étudiants</p>
+                  <p className="text-3xl font-bold text-yellow-900">{stats.etudiants}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Sections */}
+        <div className="space-y-12">
+          {/* Unassigned Candidates Section */}
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6">
+              <h2 className="text-2xl font-bold text-white flex items-center">
+                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                 </svg>
+                Candidats en attente d'assignation
+              </h2>
+            </div>
+            <div className="p-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={candidateSearch}
+                    onChange={e => setCandidateSearch(e.target.value)}
+                    placeholder="Rechercher par nom ou email..."
+                    className="w-full md:w-80 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none transition-all duration-200"
+                    aria-label="Rechercher un candidat"
+                  />
+                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <button
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                  onClick={() => {
+                    const exportData = filteredCandidates.map(c => ({
+                      name: c.name || "",
+                      email: c.email,
+                      createdAt: new Date(c.createdAt).toLocaleDateString("fr-FR")
+                    }));
+                    exportToCSV(exportData, ["name", "email", "createdAt"], "candidats.csv");
+                  }}
+                >
+                  📊 Exporter CSV
+                </button>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-blue-600">Total Utilisateurs</p>
-                <p className="text-2xl font-bold text-blue-900">{stats.totalUsers}</p>
-              </div>
+              
+              {loadingCandidates ? (
+                <div className="text-center py-12">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-600 border-r-transparent"></div>
+                  <p className="mt-4 text-gray-600">Chargement des candidats...</p>
+                </div>
+              ) : filteredCandidates.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 text-lg">Aucun candidat en attente d'assignation</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Nom</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Email</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Date d'inscription</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredCandidates.map((c) => (
+                        <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-200">
+                          <td className="px-6 py-4">
+                            <span className="font-medium text-gray-900">{c.name || <span className="italic text-gray-400">(Non renseigné)</span>}</span>
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">{c.email}</td>
+                          <td className="px-6 py-4 text-gray-600">{new Date(c.createdAt).toLocaleDateString("fr-FR")}</td>
+                          <td className="px-6 py-4">
+                            <button
+                              className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+                              onClick={() => {
+                                setCandidateToAssign(c);
+                                setAssignModalOpen(true);
+                                setSelectedEnseignantId("");
+                              }}
+                            >
+                              📝 Demander entretien
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-600">Total Réservations</p>
-                <p className="text-2xl font-bold text-green-900">{stats.totalReservations}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-yellow-600">En Attente</p>
-                <p className="text-2xl font-bold text-yellow-900">{stats.pendingReservations}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Continue with other sections... */}
+          
+          {/* Assigned Candidates Section */}
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
+              <h2 className="text-2xl font-bold text-white flex items-center">
+                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-purple-600">Terminées</p>
-                <p className="text-2xl font-bold text-purple-900">{stats.completedReservations}</p>
-              </div>
+                Candidats assignés
+              </h2>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* User Statistics */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <span className="text-2xl">👑</span>
+            <div className="p-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={assignedCandidateSearch}
+                    onChange={e => setAssignedCandidateSearch(e.target.value)}
+                    placeholder="Rechercher par nom, email ou enseignant..."
+                    className="w-full md:w-80 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 focus:outline-none transition-all duration-200"
+                    aria-label="Rechercher un candidat assigné"
+                  />
+                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <button
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                  onClick={() => {
+                    const exportData = filteredAssignedCandidates.map(c => ({
+                      name: c.name || "",
+                      email: c.email,
+                      enseignantName: c.enseignant?.name || "",
+                      enseignantEmail: c.enseignant?.email || "",
+                      status: c.status,
+                      noteSur100: c.evaluation?.noteSur100 || "Non évalué",
+                      createdAt: new Date(c.createdAt).toLocaleDateString("fr-FR")
+                    }));
+                    exportToCSV(exportData, ["name", "email", "enseignantName", "enseignantEmail", "status", "noteSur100", "createdAt"], "candidats_assignes.csv");
+                  }}
+                >
+                  📊 Exporter CSV
+                </button>
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-red-600">Admins</p>
-                <p className="text-2xl font-bold text-red-900">{stats.admins}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <span className="text-2xl">👨‍🏫</span>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-blue-600">Enseignants</p>
-                <p className="text-2xl font-bold text-blue-900">{stats.enseignants}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <span className="text-2xl">👤</span>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-green-600">Candidats</p>
-                <p className="text-2xl font-bold text-green-900">{stats.candidats}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <span className="text-2xl">🎓</span>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-yellow-600">Étudiants</p>
-                <p className="text-2xl font-bold text-yellow-900">{stats.etudiants}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Unassigned Candidates Section */}
-      <div className="mt-12 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Candidats en attente d'assignation</h2>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-          <input
-            type="text"
-            value={candidateSearch}
-            onChange={e => setCandidateSearch(e.target.value)}
-            placeholder="Rechercher par nom ou email..."
-            className="border p-2 rounded w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            aria-label="Rechercher un candidat"
-          />
-          <button
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-xs mt-2 md:mt-0 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            onClick={() => {
-              const exportData = filteredCandidates.map(c => ({
-                name: c.name || "",
-                email: c.email,
-                createdAt: new Date(c.createdAt).toLocaleDateString("fr-FR")
-              }));
-              exportToCSV(exportData, ["name", "email", "createdAt"], "candidats.csv");
-            }}
-          >
-            Exporter CSV
-          </button>
-        </div>
-        {loadingCandidates ? (
-          <div className="text-gray-500">Chargement...</div>
-        ) : filteredCandidates.length === 0 ? (
-          <div className="text-gray-500">Aucun candidat en attente.</div>
-        ) : (
-          <div className="overflow-x-auto w-full" tabIndex={0} aria-label="Tableau des candidats en attente d'assignation">
-            <table className="min-w-full bg-white rounded shadow text-sm">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Nom</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Email</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Date d'inscription</th>
-                  <th className="px-4 py-2"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCandidates.map((c) => (
-                  <tr key={c.id} className="border-t">
-                    <td className="px-4 py-2">{c.name || <span className="italic text-gray-400">(Non renseigné)</span>}</td>
-                    <td className="px-4 py-2">{c.email}</td>
-                    <td className="px-4 py-2">{new Date(c.createdAt).toLocaleDateString("fr-FR")}</td>
-                    <td className="px-4 py-2">
-                      <button
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs"
-                        onClick={() => {
-                          setCandidateToAssign(c);
-                          setAssignModalOpen(true);
-                          setSelectedEnseignantId("");
-                        }}
-                      >
-                        Demander
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Assigned Candidates Section */}
-      <div className="mt-12 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Candidats assignés</h2>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-          <input
-            type="text"
-            value={assignedCandidateSearch}
-            onChange={e => setAssignedCandidateSearch(e.target.value)}
-            placeholder="Rechercher par nom, email ou enseignant..."
-            className="border p-2 rounded w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            aria-label="Rechercher un candidat assigné"
-          />
-          <button
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-xs mt-2 md:mt-0 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            onClick={() => {
-              const exportData = filteredAssignedCandidates.map(c => ({
-                name: c.name || "",
-                email: c.email,
-                enseignantName: c.enseignant?.name || "",
-                enseignantEmail: c.enseignant?.email || "",
-                status: c.status,
-                noteSur100: c.evaluation?.noteSur100 || "Non évalué",
-                createdAt: new Date(c.createdAt).toLocaleDateString("fr-FR")
-              }));
-              exportToCSV(exportData, ["name", "email", "enseignantName", "enseignantEmail", "status", "noteSur100", "createdAt"], "candidats_assignes.csv");
-            }}
-          >
-            Exporter CSV
-          </button>
-        </div>
-        {loadingAssigned ? (
-          <div className="text-gray-500">Chargement...</div>
-        ) : filteredAssignedCandidates.length === 0 ? (
-          <div className="text-gray-500">Aucun candidat assigné.</div>
-        ) : (
-          <div className="overflow-x-auto w-full" tabIndex={0} aria-label="Tableau des candidats assignés">
-            <table className="min-w-full bg-white rounded shadow text-sm">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Nom</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Email</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Enseignant assigné</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Statut</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Date d'entretien</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Date d'assignation</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Évaluation</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAssignedCandidates.map((c) => (
-                  <tr key={c.id} className="border-t">
-                    <td className="px-4 py-2">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{c.name || <span className="italic text-gray-400">(Non renseigné)</span>}</span>
-                        {c.specialite && <span className="text-xs text-gray-500">{c.specialite}</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2">{c.email}</td>
-                    <td className="px-4 py-2">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{c.enseignant?.name || <span className="italic text-gray-400">(Non renseigné)</span>}</span>
-                        <span className="text-xs text-gray-500">{c.enseignant?.email}</span>
-                        {c.enseignant?.specialite && <span className="text-xs text-gray-400">{c.enseignant.specialite}</span>}
-                      </div>
-                    </td>
-                    <td className="px-4 py-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        c.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        c.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                        c.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {c.status === 'PENDING' ? 'En attente' :
-                         c.status === 'ACCEPTED' ? 'Accepté' :
-                         c.status === 'REJECTED' ? 'Refusé' :
-                         c.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2">
-                      {c.dateEntretien ? (
-                        <div className="flex flex-col">
-                          <span className="text-sm">{new Date(c.dateEntretien).toLocaleDateString("fr-FR")}</span>
-                          <span className="text-xs text-gray-500">{new Date(c.dateEntretien).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</span>
-                          {c.meetLink && (
-                            <a 
-                              href={c.meetLink} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:underline"
-                            >
-                              Lien de réunion
-                            </a>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 text-sm">Non confirmé</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2">{new Date(c.requestCreatedAt).toLocaleDateString("fr-FR")}</td>
-                    <td className="px-4 py-2">
-                      {c.evaluation ? (
-                        <div className="bg-blue-50 p-2 rounded border border-blue-200">
-                          <div className="text-xs font-medium text-blue-800 mb-1">
-                            Note: {c.evaluation.noteSur100}/100
-                          </div>
-                          <div className="text-xs text-blue-600 space-y-1">
-                            {c.evaluation.francais && <div>Français: {c.evaluation.francais}/20</div>}
-                            {c.evaluation.anglais && <div>Anglais: {c.evaluation.anglais}/20</div>}
-                            {c.evaluation.motivation && <div>Motivation: {c.evaluation.motivation}/20</div>}
-                            {c.evaluation.cultureGenerale && <div>Culture: {c.evaluation.cultureGenerale}/20</div>}
-                            {c.evaluation.bonus && <div>Bonus: {c.evaluation.bonus}/20</div>}
-                            {c.evaluation.competence && c.evaluation.competence !== 'AUCUNE' && (
-                              <div>Compétence: {c.evaluation.competence}</div>
-                            )}
-                          </div>
-                          {c.evaluation.observation && (
-                            <div className="mt-1 text-xs text-blue-700 bg-blue-100 p-1 rounded">
-                              {c.evaluation.observation}
+              
+              {loadingAssigned ? (
+                <div className="text-center py-12">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-green-600 border-r-transparent"></div>
+                  <p className="mt-4 text-gray-600">Chargement des candidats assignés...</p>
+                </div>
+              ) : filteredAssignedCandidates.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 text-lg">Aucun candidat assigné</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Nom</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Email</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Enseignant assigné</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Statut</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Date d'entretien</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Date d'assignation</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Évaluation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredAssignedCandidates.map((c) => (
+                        <tr key={c.id} className="hover:bg-gray-50 transition-colors duration-200">
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-gray-900">{c.name || <span className="italic text-gray-400">(Non renseigné)</span>}</span>
+                              {c.specialite && <span className="text-xs text-gray-500">{c.specialite}</span>}
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400 text-sm">Non évalué</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Enseignants and Availabilities Section */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Enseignants disponibles pour assignation</h2>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
-          <input
-            type="text"
-            value={enseignantSearch}
-            onChange={e => setEnseignantSearch(e.target.value)}
-            placeholder="Rechercher par nom ou email..."
-            className="border p-2 rounded w-full md:w-64 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            aria-label="Rechercher un enseignant"
-          />
-          <button
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-xs mt-2 md:mt-0 focus:ring-2 focus:ring-green-500 focus:outline-none"
-            onClick={() => exportToCSV(filteredEnseignants, ["name", "email"], "enseignants.csv")}
-          >
-            Exporter CSV
-          </button>
-        </div>
-        {loadingEnseignants ? (
-          <div className="text-gray-500">Chargement...</div>
-        ) : filteredEnseignants.length === 0 ? (
-          <div className="text-gray-500">Aucun enseignant avec des créneaux disponibles.</div>
-        ) : (
-          <div className="overflow-x-auto w-full" tabIndex={0} aria-label="Tableau des enseignants disponibles">
-            <table className="min-w-full bg-white rounded shadow text-sm">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Nom</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Email</th>
-                  <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700">Créneaux disponibles</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEnseignants.map((e) => (
-                  <tr key={e.id} className="border-t align-top">
-                    <td className="px-4 py-2">{e.name || <span className="italic text-gray-400">(Non renseigné)</span>}</td>
-                    <td className="px-4 py-2">{e.email}</td>
-                    <td className="px-4 py-2">
-                      <span className="text-sm text-gray-700 font-medium">{e.disponibilites.length} créneau(x) disponible(s)</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-      {/* Assignment Modal */}
-      {assignModalOpen && candidateToAssign && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="assign-modal-title">
-          <div className="bg-white rounded-lg shadow-lg max-w-lg w-full p-6">
-            <h2 id="assign-modal-title" className="text-xl font-bold mb-4">Demander un entretien</h2>
-            <div className="mb-4">
-              <div className="mb-2 font-semibold">Candidat :</div>
-              <div>{candidateToAssign.name || <span className="italic text-gray-400">(Non renseigné)</span>}<br/>{candidateToAssign.email}</div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">{c.email}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-medium text-gray-900">{c.enseignant?.name || <span className="italic text-gray-400">(Non renseigné)</span>}</span>
+                              <span className="text-xs text-gray-500">{c.enseignant?.email}</span>
+                              {c.enseignant?.specialite && <span className="text-xs text-gray-400">{c.enseignant.specialite}</span>}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              c.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                              c.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                              c.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {c.status === 'PENDING' ? 'En attente' :
+                               c.status === 'ACCEPTED' ? 'Accepté' :
+                               c.status === 'REJECTED' ? 'Refusé' :
+                               c.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            {c.dateEntretien ? (
+                              <div className="flex flex-col">
+                                <span className="text-sm font-medium text-gray-900">{new Date(c.dateEntretien).toLocaleDateString("fr-FR")}</span>
+                                <span className="text-xs text-gray-500">{new Date(c.dateEntretien).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</span>
+                                {c.meetLink && (
+                                  <a 
+                                    href={c.meetLink} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                                  >
+                                    🔗 Lien de réunion
+                                  </a>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">Non confirmé</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-gray-600">{new Date(c.requestCreatedAt).toLocaleDateString("fr-FR")}</td>
+                          <td className="px-6 py-4">
+                            {c.evaluation ? (
+                              <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                                <div className="text-sm font-bold text-blue-800 mb-2 text-center">
+                                  🎯 {c.evaluation.noteSur100}/100
+                                </div>
+                                <div className="text-xs text-blue-700 space-y-1">
+                                  {c.evaluation.francais && <div>🇫🇷 Français: {c.evaluation.francais}/20</div>}
+                                  {c.evaluation.anglais && <div>🇬🇧 Anglais: {c.evaluation.anglais}/20</div>}
+                                  {c.evaluation.motivation && <div>💪 Motivation: {c.evaluation.motivation}/20</div>}
+                                  {c.evaluation.cultureGenerale && <div>📚 Culture: {c.evaluation.cultureGenerale}/20</div>}
+                                  {c.evaluation.bonus && <div>⭐ Bonus: {c.evaluation.bonus}/20</div>}
+                                  {c.evaluation.competence && c.evaluation.competence !== 'AUCUNE' && (
+                                    <div>🎯 Compétence: {c.evaluation.competence}</div>
+                                  )}
+                                </div>
+                                {c.evaluation.observation && (
+                                  <div className="mt-2 text-xs text-blue-800 bg-blue-100 p-2 rounded-lg">
+                                    💭 {c.evaluation.observation}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">Non évalué</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-            <form
-              onSubmit={async e => {
-                e.preventDefault();
-                setAssigning(true);
-                setAssignError("");
-                setAssignSuccess("");
-                try {
-                  const res = await fetch("/api/admin/request-interview", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                      candidateId: candidateToAssign?.id, 
-                      enseignantId: selectedEnseignantId 
-                    }),
-                  });
-                  if (res.ok) {
-                    setAssignSuccess("Demande d'entretien envoyée à l'enseignant !");
-                    setAssignModalOpen(false);
-                    setCandidateToAssign(null);
-                    setSelectedEnseignantId("");
-                    // Refresh lists
-                    fetchUnassignedCandidates();
-                    fetchEnseignants();
-                    fetchAssignedCandidates(); // Refresh assigned candidates
-                  } else {
-                    const error = await res.json();
-                    setAssignError(error.error || "Erreur lors de l'envoi de la demande.");
-                  }
-                } catch (e) {
-                  setAssignError("Erreur lors de l'envoi de la demande.");
-                } finally {
-                  setAssigning(false);
-                }
-              }}
-              className="space-y-4"
-            >
-              <label className="block mb-4" htmlFor="enseignant-select">
-                Enseignant :
-                <select
-                  id="enseignant-select"
-                  required
-                  value={selectedEnseignantId}
-                  onChange={e => setSelectedEnseignantId(e.target.value)}
-                  className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                >
-                  <option value="">Choisir un enseignant</option>
-                  {enseignants.map(e => (
-                    <option key={e.id} value={e.id}>{e.name || e.email} ({e.disponibilites.length} créneau(x) disponible(s))</option>
-                  ))}
-                </select>
-              </label>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-                <p><strong>Note :</strong> L'enseignant recevra une notification et choisira lui-même la date/heure de l'entretien.</p>
-              </div>
-              {assignError && <div className="text-red-600 text-sm mb-2">{assignError}</div>}
-              {assignSuccess && <div className="text-green-600 text-sm mb-2">{assignSuccess}</div>}
-              <div className="flex justify-end gap-3">
+          </div>
+
+          {/* Enseignants Section */}
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+              <h2 className="text-2xl font-bold text-white flex items-center">
+                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+                Enseignants disponibles pour assignation
+              </h2>
+            </div>
+            <div className="p-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={enseignantSearch}
+                    onChange={e => setEnseignantSearch(e.target.value)}
+                    placeholder="Rechercher par nom ou email..."
+                    className="w-full md:w-80 pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200"
+                    aria-label="Rechercher un enseignant"
+                  />
+                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
                 <button
-                  type="button"
-                  onClick={() => { setAssignModalOpen(false); setCandidateToAssign(null); setAssignError(""); setAssignSuccess(""); }}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  tabIndex={0}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                  onClick={() => exportToCSV(filteredEnseignants, ["name", "email"], "enseignants.csv")}
                 >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={!selectedEnseignantId || assigning}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  tabIndex={0}
-                >
-                  {assigning ? "Envoi..." : "Envoyer la demande"}
+                  📊 Exporter CSV
                 </button>
               </div>
-            </form>
+              
+              {loadingEnseignants ? (
+                <div className="text-center py-12">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                  <p className="mt-4 text-gray-600">Chargement des enseignants...</p>
+                </div>
+              ) : filteredEnseignants.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500 text-lg">Aucun enseignant avec des créneaux disponibles</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Nom</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Email</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Créneaux disponibles</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredEnseignants.map((e) => (
+                        <tr key={e.id} className="hover:bg-gray-50 transition-colors duration-200">
+                          <td className="px-6 py-4">
+                            <span className="font-medium text-gray-900">{e.name || <span className="italic text-gray-400">(Non renseigné)</span>}</span>
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">{e.email}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                📅 {e.disponibilites.length} créneau{e.disponibilites.length !== 1 ? 'x' : ''} disponible{e.disponibilites.length !== 1 ? 's' : ''}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Assignment Modal */}
+        {assignModalOpen && candidateToAssign && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-labelledby="assign-modal-title">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 m-4">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h2 id="assign-modal-title" className="text-2xl font-bold text-gray-900">Demander un entretien</h2>
+              </div>
+              
+              <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                <div className="mb-2 font-semibold text-gray-700">Candidat :</div>
+                <div className="text-gray-800">
+                  <div className="font-medium">{candidateToAssign.name || <span className="italic text-gray-400">(Non renseigné)</span>}</div>
+                  <div className="text-sm text-gray-600">{candidateToAssign.email}</div>
+                </div>
+              </div>
+              
+              <form
+                onSubmit={async e => {
+                  e.preventDefault();
+                  setAssigning(true);
+                  setAssignError("");
+                  setAssignSuccess("");
+                  try {
+                    const res = await fetch("/api/admin/request-interview", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ 
+                        candidateId: candidateToAssign?.id, 
+                        enseignantId: selectedEnseignantId 
+                      }),
+                    });
+                    if (res.ok) {
+                      setAssignSuccess("Demande d'entretien envoyée à l'enseignant !");
+                      setAssignModalOpen(false);
+                      setCandidateToAssign(null);
+                      setSelectedEnseignantId("");
+                      fetchUnassignedCandidates();
+                      fetchEnseignants();
+                      fetchAssignedCandidates();
+                    } else {
+                      const error = await res.json();
+                      setAssignError(error.error || "Erreur lors de l'envoi de la demande.");
+                    }
+                  } catch (e) {
+                    setAssignError("Erreur lors de l'envoi de la demande.");
+                  } finally {
+                    setAssigning(false);
+                  }
+                }}
+                className="space-y-6"
+              >
+                <label className="block" htmlFor="enseignant-select">
+                  <span className="block text-sm font-medium text-gray-700 mb-2">Enseignant :</span>
+                  <select
+                    id="enseignant-select"
+                    required
+                    value={selectedEnseignantId}
+                    onChange={e => setSelectedEnseignantId(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none transition-all duration-200"
+                  >
+                    <option value="">Choisir un enseignant</option>
+                    {enseignants.map(e => (
+                      <option key={e.id} value={e.id}>
+                        {e.name || e.email} ({e.disponibilites.length} créneau{e.disponibilites.length !== 1 ? 'x' : ''} disponible{e.disponibilites.length !== 1 ? 's' : ''})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                  <p><strong>💡 Note :</strong> L'enseignant recevra une notification et choisira lui-même la date/heure de l'entretien.</p>
+                </div>
+                
+                {assignError && (
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
+                    ❌ {assignError}
+                  </div>
+                )}
+                
+                {assignSuccess && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-800">
+                    ✅ {assignSuccess}
+                  </div>
+                )}
+                
+                <div className="flex justify-end gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => { setAssignModalOpen(false); setCandidateToAssign(null); setAssignError(""); setAssignSuccess(""); }}
+                    className="px-6 py-3 text-gray-600 border border-gray-300 rounded-xl hover:bg-gray-50 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all duration-200 font-medium"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!selectedEnseignantId || assigning}
+                    className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-red-500 focus:outline-none transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    {assigning ? (
+                      <span className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Envoi...
+                      </span>
+                    ) : (
+                      "📤 Envoyer la demande"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

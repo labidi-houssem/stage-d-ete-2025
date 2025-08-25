@@ -107,10 +107,10 @@ export default function CalendarPage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="mt-4 text-lg">Chargement...</p>
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-red-600 border-r-transparent"></div>
+          <p className="mt-6 text-xl font-medium text-gray-700">Chargement du calendrier...</p>
         </div>
       </div>
     );
@@ -123,66 +123,181 @@ export default function CalendarPage() {
   // Admin Calendar View - Show all enseignant availabilities
   if (session.user?.role === "ADMIN") {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Disponibilités des enseignants</h1>
-            <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <input
-                type="text"
-                placeholder="Rechercher un enseignant par nom ou email..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full md:w-80 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-                aria-label="Recherche enseignant"
-              />
-              <span className="text-sm text-gray-500">{filteredEnseignants.length} enseignant(s) affiché(s)</span>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header */}
+          <div className="mb-12 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-3xl shadow-xl mb-6">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
             </div>
-            {filteredEnseignants.length === 0 ? (
-              <div className="text-gray-500 text-center py-12">Aucun enseignant trouvé.</div>
-            ) : (
-              <div className="space-y-8">
-                {filteredEnseignants.map((enseignant) => (
-                  <section key={enseignant.id} className="border border-gray-200 rounded-xl p-6 bg-gray-50" aria-label={`Disponibilités de ${enseignant.name || enseignant.email}`}> 
-                    <div className="mb-2 flex flex-col md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <h2 className="font-semibold text-lg text-gray-800">{enseignant.name || enseignant.email}</h2>
-                        <p className="text-sm text-gray-500">{enseignant.email}</p>
+            <h1 className="text-4xl font-bold text-gray-900 mb-3">
+              Calendrier des Disponibilités
+            </h1>
+            <p className="text-xl text-gray-600 mb-2">
+              Gérez et visualisez les créneaux disponibles des enseignants
+            </p>
+            <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-red-700 mx-auto rounded-full"></div>
+          </div>
+
+          {/* Search and Filter Section */}
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+              <h2 className="text-2xl font-bold text-white flex items-center">
+                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Recherche et Filtres
+              </h2>
+            </div>
+            <div className="p-8">
+              <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Rechercher un enseignant par nom ou email..."
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200 text-lg"
+                    aria-label="Recherche enseignant"
+                  />
+                  <svg className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <div className="inline-flex items-center px-6 py-3 bg-blue-100 rounded-full">
+                  <svg className="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <span className="text-blue-700 font-medium">
+                    {filteredEnseignants.length} enseignant{filteredEnseignants.length !== 1 ? 's' : ''} affiché{filteredEnseignants.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enseignants List */}
+          {filteredEnseignants.length === 0 ? (
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-16 text-center">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 text-xl mb-2">Aucun enseignant trouvé</p>
+              <p className="text-gray-400">Essayez de modifier vos critères de recherche</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {filteredEnseignants.map((enseignant) => (
+                <div key={enseignant.id} className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                  <div className="bg-gradient-to-r from-green-600 to-green-700 px-8 py-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                          <span className="text-2xl">👨‍🏫</span>
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold text-white">{enseignant.name || enseignant.email}</h2>
+                          <p className="text-green-100">{enseignant.email}</p>
+                        </div>
                       </div>
-                      <div className="mt-2 md:mt-0 text-sm text-gray-600">
-                        {enseignant.disponibilites.length} créneau(x) disponible(s)
+                      <div className="mt-4 md:mt-0">
+                        <div className="inline-flex items-center px-4 py-2 bg-white/20 rounded-full">
+                          <svg className="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-white font-medium">
+                            {enseignant.disponibilites.length} créneau{enseignant.disponibilites.length !== 1 ? 'x' : ''} disponible{enseignant.disponibilites.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
                       </div>
                     </div>
+                  </div>
+                  
+                  <div className="p-8">
                     {enseignant.disponibilites.length === 0 ? (
-                      <div className="text-gray-400 italic mt-4">Aucune disponibilité à venir.</div>
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <p className="text-gray-500 text-lg font-medium">Aucune disponibilité à venir</p>
+                        <p className="text-gray-400">Cet enseignant n'a pas encore défini ses créneaux</p>
+                      </div>
                     ) : (
-                      <div className="overflow-x-auto mt-4">
-                        <table className="min-w-full divide-y divide-gray-200" aria-label="Créneaux disponibles">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
                           <thead>
-                            <tr>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date début</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date fin</th>
+                            <tr className="border-b border-gray-200">
+                              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Date de début</th>
+                              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Date de fin</th>
+                              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Durée</th>
                             </tr>
                           </thead>
-                          <tbody>
-                            {[...enseignant.disponibilites].sort((a, b) => new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime()).map((slot) => (
-                              <tr key={slot.id}>
-                                <td className="px-4 py-2 whitespace-nowrap">{new Date(slot.dateDebut).toLocaleString("fr-FR")}</td>
-                                <td className="px-4 py-2 whitespace-nowrap">{new Date(slot.dateFin).toLocaleString("fr-FR")}</td>
-                              </tr>
-                            ))}
+                          <tbody className="divide-y divide-gray-200">
+                            {[...enseignant.disponibilites].sort((a, b) => new Date(a.dateDebut).getTime() - new Date(b.dateDebut).getTime()).map((slot) => {
+                              const startDate = new Date(slot.dateDebut);
+                              const endDate = new Date(slot.dateFin);
+                              const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
+                              
+                              return (
+                                <tr key={slot.id} className="hover:bg-gray-50 transition-colors duration-200">
+                                  <td className="px-6 py-4">
+                                    <div className="flex items-center">
+                                      <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                      <span className="text-gray-900 font-medium">
+                                        {startDate.toLocaleDateString("fr-FR", {
+                                          weekday: 'long',
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric'
+                                        })}
+                                      </span>
+                                    </div>
+                                    <div className="text-sm text-gray-600 ml-6">
+                                      {startDate.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <div className="text-gray-900 font-medium">
+                                      {endDate.toLocaleDateString("fr-FR", {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                      })}
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                      {endDate.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                      {duration} min
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
                     )}
-                  </section>
-            ))}
-              </div>
-            )}
-          </div>
-          </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      );
+      </div>
+    );
     }
     
   // Enseignant Calendar View - Show their availability in calendar format
@@ -194,42 +309,67 @@ export default function CalendarPage() {
     ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">Mon Calendrier</h1>
-            <div className="flex gap-2">
-              <button
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-600 to-red-700 rounded-3xl shadow-xl mb-6">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            Mon Calendrier
+          </h1>
+          <p className="text-xl text-gray-600 mb-2">
+            Visualisez et gérez vos disponibilités
+          </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-red-600 to-red-700 mx-auto rounded-full"></div>
+        </div>
+
+        {/* Calendar Navigation */}
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <h2 className="text-2xl font-bold text-white mb-4 md:mb-0">
+                📅 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+              </h2>
+              <div className="flex gap-3">
+                <button
                   onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
-                  className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                  ←
-              </button>
-                <span className="px-4 py-2 font-semibold">
-                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-                </span>
+                  className="px-6 py-3 bg-white/20 text-white rounded-xl hover:bg-white/30 transition-all duration-200 font-medium"
+                >
+                  ← Précédent
+                </button>
+                <button
+                  onClick={() => setCurrentDate(new Date())}
+                  className="px-6 py-3 bg-white/20 text-white rounded-xl hover:bg-white/30 transition-all duration-200 font-medium"
+                >
+                  Aujourd'hui
+                </button>
                 <button
                   onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
-                  className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  className="px-6 py-3 bg-white/20 text-white rounded-xl hover:bg-white/30 transition-all duration-200 font-medium"
                 >
-                  →
+                  Suivant →
                 </button>
               </div>
-                  </div>
-
+            </div>
+          </div>
+          
+          <div className="p-8">
             {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 gap-2">
               {/* Day headers */}
-              {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map(day => (
-                <div key={day} className="p-2 text-center font-semibold text-gray-600 bg-gray-100">
+              {['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'].map(day => (
+                <div key={day} className="p-4 text-center font-bold text-gray-700 bg-gray-100 rounded-xl">
                   {day}
                 </div>
               ))}
 
               {/* Empty cells for days before month starts */}
               {Array.from({ length: startingDay }, (_, i) => (
-                <div key={`empty-${i}`} className="p-2 bg-gray-50"></div>
+                <div key={`empty-${i}`} className="p-4 bg-gray-50 rounded-xl"></div>
               ))}
 
               {/* Days of the month */}
@@ -243,53 +383,62 @@ export default function CalendarPage() {
                 return (
                   <div 
                     key={day} 
-                    className={`p-2 min-h-24 border border-gray-200 ${
-                      isToday ? 'bg-blue-50 border-blue-300' : 'bg-white'
+                    className={`p-4 min-h-32 border-2 rounded-xl transition-all duration-200 ${
+                      isToday 
+                        ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg' 
+                        : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-md'
                     }`}
                   >
-                    <div className="text-sm font-medium mb-1">{day}</div>
+                    <div className={`text-lg font-bold mb-2 ${
+                      isToday ? 'text-blue-700' : 'text-gray-900'
+                    }`}>
+                      {day}
+                    </div>
                     {disponibilites.map((dispo, index) => (
-                              <div
+                      <div
                         key={dispo.id} 
-                        className="text-xs bg-green-100 text-green-800 p-1 rounded mb-1"
+                        className="text-xs bg-gradient-to-r from-green-500 to-green-600 text-white p-2 rounded-lg mb-2 shadow-sm"
                       >
-                        {formatTime(dispo.dateDebut)} - {formatTime(dispo.dateFin)}
-                              </div>
-                            ))}
-                          </div>
+                        <div className="font-medium">
+                          {formatTime(dispo.dateDebut)} - {formatTime(dispo.dateFin)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 );
               })}
             </div>
 
             {/* Legend */}
-            <div className="mt-6 flex items-center gap-4 text-sm">
+            <div className="mt-8 flex flex-wrap items-center gap-6 text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-green-100 border border-green-300 rounded"></div>
-                <span>Disponibilité</span>
+                <div className="w-4 h-4 bg-gradient-to-r from-green-500 to-green-600 rounded"></div>
+                <span className="font-medium">Disponibilité</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 bg-blue-50 border border-blue-300 rounded"></div>
-                <span>Aujourd'hui</span>
-                </div>
+                <div className="w-4 h-4 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded"></div>
+                <span className="font-medium">Aujourd'hui</span>
               </div>
+            </div>
 
             {/* Quick Actions */}
-            <div className="mt-6 flex gap-4">
+            <div className="mt-8 flex flex-wrap gap-4">
               <a 
                 href="/enseignant/disponibilites" 
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                Gérer mes disponibilités
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                📅 Gérer mes disponibilités
               </a>
               <a 
                 href="/enseignant/interview-requests" 
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 focus:ring-2 focus:ring-green-500 focus:outline-none transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                Voir les demandes d'entretien
+                👥 Voir les demandes d'entretien
               </a>
             </div>
           </div>
         </div>
+      </div>
     </div>
   );
   }

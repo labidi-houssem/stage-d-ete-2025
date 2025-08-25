@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
 
-
 export type SidebarLink = {
   href: string;
   label: string;
@@ -15,55 +14,70 @@ interface SidebarProps {
   links: SidebarLink[];
   currentPath?: string;
   horizontal?: boolean;
-  dashboardIcon?: React.ReactNode; // <-- add this
+  dashboardIcon?: React.ReactNode;
 }
 
 export default function Sidebar({ links, currentPath, horizontal = false, dashboardIcon }: SidebarProps) {
   const [open, setOpen] = useState(false);
 
-  const dashboardLink = links.find(link => link.label === "Dashboard");
-
   if (horizontal) {
-    // Responsive horizontal bar: hamburger on mobile, row on desktop
     return (
-      <nav className="w-full bg-white shadow flex items-center px-4 h-14 border-b z-20 relative">
-        {/* Hamburger for mobile */}
+      <nav className="w-full bg-white shadow-lg flex items-center px-6 h-16 border-b border-gray-100 z-20 relative">
+        {/* Mobile hamburger */}
         <button
-          className="md:hidden p-2 mr-2"
+          className="lg:hidden p-2 mr-4 rounded-lg hover:bg-gray-100 transition-colors"
           onClick={() => setOpen(!open)}
           aria-label="Ouvrir le menu"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        {/* Links: hidden on mobile unless open, always visible on md+ */}
-        <div className={`flex-1 flex gap-2 overflow-x-auto transition-all duration-200 ${open ? 'absolute left-0 top-14 w-full bg-white flex-col shadow-md p-4 z-30' : 'hidden'} md:flex md:static md:flex-row md:bg-transparent md:shadow-none md:p-0 md:z-auto`}> 
+
+        {/* Logo/Brand */}
+        <div className="flex items-center gap-3 mr-8">
+          <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-red-700 rounded-lg flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <span className="text-xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
+            ESPRIT
+          </span>
+        </div>
+
+        {/* Navigation Links */}
+        <div className={`flex-1 flex gap-1 overflow-x-auto transition-all duration-300 ${open ? 'absolute left-0 top-16 w-full bg-white flex-col shadow-xl p-4 z-30' : 'hidden'} lg:flex lg:static lg:flex-row lg:bg-transparent lg:shadow-none lg:p-0 lg:z-auto`}> 
           {links.map(link => (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center px-4 py-2 transition-colors rounded-lg hover:bg-gray-100 ${currentPath === link.href ? 'bg-gray-200 font-semibold' : ''}`}
+              className={`flex items-center px-4 py-2.5 transition-all duration-200 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:shadow-md ${currentPath === link.href ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg scale-105' : 'text-gray-700 hover:text-red-600'}`}
               onClick={() => setOpen(false)}
             >
-              <span className="w-5 h-5">{link.icon}</span>
-              <span className="ml-2">{link.label}</span>
+              <span className="w-5 h-5 mr-3">{link.icon}</span>
+              <span className="font-medium">{link.label}</span>
             </Link>
           ))}
         </div>
-        <button
-          onClick={() => signOut({ callbackUrl: '/Auth/Signin' })}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold ml-4"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
-          </svg>
-          <span className="hidden sm:inline">Se déconnecter</span>
-        </button>
-        {/* Overlay for mobile menu */}
+
+        {/* User Actions */}
+        <div className="flex items-center gap-3 ml-4">
+          <button
+            onClick={() => signOut({ callbackUrl: '/Auth/Signin' })}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
+            </svg>
+            <span className="hidden sm:inline">Déconnexion</span>
+          </button>
+        </div>
+
+        {/* Mobile overlay */}
         {open && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-30 z-10 md:hidden"
+            className="fixed inset-0 bg-black bg-opacity-20 z-10 lg:hidden"
             onClick={() => setOpen(false)}
           />
         )}
@@ -76,52 +90,67 @@ export default function Sidebar({ links, currentPath, horizontal = false, dashbo
     <>
       {/* Mobile Hamburger */}
       <button
-        className="md:hidden fixed top-4 left-4 z-30 p-2 rounded bg-white shadow-md border border-gray-200"
+        className="lg:hidden fixed top-6 left-6 z-50 p-3 rounded-xl bg-white shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-200"
         onClick={() => setOpen(!open)}
         aria-label="Ouvrir le menu"
       >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
+
       {/* Sidebar */}
       <aside
-        className={`fixed z-20 top-0 left-0 h-full w-64 bg-gradient-to-b from-red-600 via-white to-white shadow-xl flex flex-col rounded-r-3xl transition-transform duration-200 md:static md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+        className={`fixed z-40 top-0 left-0 h-full w-72 bg-gradient-to-b from-white via-gray-50 to-gray-100 shadow-2xl flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
       >
-        <div className="p-6 font-bold text-2xl text-white bg-black shadow flex items-center justify-between h-16">
-          <span className="flex items-center gap-2">
-            {dashboardIcon}
-            Dashboard
-          </span>
-          <button
-            className="md:hidden p-1 ml-2 rounded hover:bg-gray-100"
-            onClick={() => setOpen(false)}
-            aria-label="Fermer le menu"
-          >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+        {/* Header */}
+        <div className="p-8 bg-gradient-to-br from-red-600 via-red-700 to-red-800 shadow-lg">
+          <div className="flex items-center justify-center">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 p-2">
+              <Image 
+                src="/images/logo/logo.png" 
+                alt="ESPRIT Logo" 
+                width={48} 
+                height={48} 
+                className="rounded-lg"
+              />
+            </div>
+          </div>
         </div>
 
-        <nav className="flex-1 mt-4 space-y-1 px-2">
+        {/* Navigation */}
+        <nav className="flex-1 px-6 py-8 space-y-2">
           {links.map(link => (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium text-gray-700 hover:bg-red-100 hover:text-red-700 ${currentPath === link.href ? 'bg-red-100 text-red-700 font-bold shadow' : ''}`}
+              className={`group flex items-center gap-4 px-4 py-4 rounded-2xl transition-all duration-300 font-medium ${
+                currentPath === link.href 
+                  ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg transform scale-105' 
+                  : 'text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100 hover:text-red-600 hover:shadow-md'
+              }`}
               onClick={() => setOpen(false)}
             >
-              <span className="w-5 h-5">{link.icon}</span>
-              <span>{link.label}</span>
+              <span className={`w-6 h-6 transition-all duration-300 ${
+                currentPath === link.href 
+                  ? 'text-white' 
+                  : 'text-gray-500 group-hover:text-red-500'
+              }`}>
+                {link.icon}
+              </span>
+              <span className="text-base">{link.label}</span>
+              {currentPath === link.href && (
+                <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              )}
             </Link>
           ))}
         </nav>
-        {/* Se déconnecter button */}
-        <div className="p-4 border-t mt-auto">
+
+        {/* Footer */}
+        <div className="p-6 border-t border-gray-200">
           <button
             onClick={() => signOut({ callbackUrl: '/Auth/Signin' })}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-500 to-red-700 text-white rounded-xl shadow-lg hover:from-red-600 hover:to-red-800 transition-colors font-semibold text-base"
+            className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl shadow-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 font-semibold text-base transform hover:scale-105 hover:shadow-xl"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
@@ -130,17 +159,14 @@ export default function Sidebar({ links, currentPath, horizontal = false, dashbo
           </button>
         </div>
       </aside>
-      {/* Overlay for mobile */}
+
+      {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-10 md:hidden"
+          className="fixed inset-0 bg-black bg-opacity-30 z-30 lg:hidden backdrop-blur-sm"
           onClick={() => setOpen(false)}
         />
       )}
     </>
   );
 }
-
-/*<DashboardLayout links={sidebarLinks} dashboardIcon={dashboardLink?.icon}>
-  {children}
-</DashboardLayout>*/
