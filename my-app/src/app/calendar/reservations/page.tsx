@@ -565,25 +565,25 @@ export default function ReservationsPage() {
                         <td className="px-4 py-3">
                           <select className="w-full border rounded px-2 py-2" value={evalFields.francais} onChange={(e)=>setEvalFields(v=>({...v, francais:e.target.value}))}>
                             <option value="">choisir</option>
-                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                            {[...Array(11)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
                           </select>
                         </td>
                         <td className="px-4 py-3">
                           <select className="w-full border rounded px-2 py-2" value={evalFields.anglais} onChange={(e)=>setEvalFields(v=>({...v, anglais:e.target.value}))}>
                             <option value="">choisir</option>
-                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                            {[...Array(11)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
                           </select>
                         </td>
                         <td className="px-4 py-3">
                           <select className="w-full border rounded px-2 py-2" value={evalFields.motivation} onChange={(e)=>setEvalFields(v=>({...v, motivation:e.target.value}))}>
                             <option value="">choisir</option>
-                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                            {[...Array(11)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
                           </select>
                         </td>
                         <td className="px-4 py-3">
                           <select className="w-full border rounded px-2 py-2" value={evalFields.cultureGenerale} onChange={(e)=>setEvalFields(v=>({...v, cultureGenerale:e.target.value}))}>
                             <option value="">choisir</option>
-                            {[...Array(6)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
+                            {[...Array(11)].map((_,i)=> <option key={i} value={i}>{i}</option>)}
                           </select>
                         </td>
                         <td className="px-4 py-3">

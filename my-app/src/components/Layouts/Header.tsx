@@ -110,19 +110,7 @@ export default function Header() {
     <header className="w-full h-20 bg-gradient-to-r from-white via-gray-50 to-white shadow-lg border-b border-gray-100 flex items-center justify-between px-8 z-10 relative">
       {/* Left side - Logo and Brand */}
       <div className="flex items-center gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-red-600 to-red-700 rounded-2xl flex items-center justify-center shadow-lg">
-            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-              ESPRIT
-            </h1>
-            <p className="text-sm text-gray-500">Plateforme de gestion des entretiens</p>
-          </div>
-        </div>
+        
       </div>
 
       {/* Right side - User info and actions */}

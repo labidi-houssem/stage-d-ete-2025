@@ -106,15 +106,14 @@ export default function Sidebar({ links, currentPath, horizontal = false, dashbo
         {/* Header */}
         <div className="p-8 bg-gradient-to-br from-red-600 via-red-700 to-red-800 shadow-lg">
           <div className="flex items-center justify-center">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 p-2">
               <Image 
                 src="/images/logo/logo.png" 
                 alt="ESPRIT Logo" 
-                width={48} 
+                width={100} 
                 height={48} 
                 className="rounded-lg"
               />
-            </div>
+            
           </div>
         </div>
 
