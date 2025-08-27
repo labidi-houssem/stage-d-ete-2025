@@ -37,6 +37,7 @@ model User {
   interviewRequestsReceived    InterviewRequest[]    @relation("EnseignantInterviewRequests")
   notifications                Notification[]
   reservations                 Reservation[]         @relation("CandidatReservations")
+  cv                           Cv?                   @relation("CandidatCV")
 }
 
 model Disponibilite {
@@ -143,4 +144,120 @@ enum Competence {
   EXPERIENCE_ONG
   SPORT
   AUCUNE
+}
+
+// CV Models
+model Cv {
+  id             String            @id @default(cuid())
+  candidatId     String            @unique
+  title          String?
+  template       String            @default("modern")
+  isPublic       Boolean           @default(false)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  candidat       User              @relation("CandidatCV", fields: [candidatId], references: [id], onDelete: Cascade)
+  personalInfo   CvPersonalInfo?
+  education      CvEducation[]
+  experience     CvExperience[]
+  skills         CvSkill[]
+  languages      CvLanguage[]
+  projects       CvProject[]
+  certifications CvCertification[]
+}
+
+model CvPersonalInfo {
+  id           String    @id @default(cuid())
+  cvId         String    @unique
+  firstName    String?
+  lastName     String?
+  email        String?
+  phone        String?
+  address      String?
+  city         String?
+  country      String?
+  postalCode   String?
+  dateOfBirth  DateTime?
+  nationality  String?
+  profileImage String?
+  summary      String?
+  linkedIn     String?
+  website      String?
+  github       String?
+  cv           Cv        @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}
+
+model CvEducation {
+  id           String    @id @default(cuid())
+  cvId         String
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  startDate    DateTime?
+  endDate      DateTime?
+  current      Boolean   @default(false)
+  grade        String?
+  description  String?
+  order        Int       @default(0)
+  cv           Cv        @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}
+
+model CvExperience {
+  id           String    @id @default(cuid())
+  cvId         String
+  company      String
+  position     String
+  location     String?
+  startDate    DateTime?
+  endDate      DateTime?
+  current      Boolean   @default(false)
+  description  String?
+  achievements String[]
+  order        Int       @default(0)
+  cv           Cv        @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}
+
+model CvSkill {
+  id       String @id @default(cuid())
+  cvId     String
+  name     String
+  level    Int    @default(1) // 1-5 scale
+  category String? // Technical, Language, Soft Skills, etc.
+  order    Int    @default(0)
+  cv       Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}
+
+model CvLanguage {
+  id    String @id @default(cuid())
+  cvId  String
+  name  String
+  level String // Beginner, Intermediate, Advanced, Native
+  order Int    @default(0)
+  cv    Cv     @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}
+
+model CvProject {
+  id           String    @id @default(cuid())
+  cvId         String
+  name         String
+  description  String?
+  technologies String[]
+  url          String?
+  githubUrl    String?
+  startDate    DateTime?
+  endDate      DateTime?
+  order        Int       @default(0)
+  cv           Cv        @relation(fields: [cvId], references: [id], onDelete: Cascade)
+}
+
+model CvCertification {
+  id           String    @id @default(cuid())
+  cvId         String
+  name         String
+  issuer       String
+  issueDate    DateTime?
+  expiryDate   DateTime?
+  credentialId String?
+  url          String?
+  order        Int       @default(0)
+  cv           Cv        @relation(fields: [cvId], references: [id], onDelete: Cascade)
 }

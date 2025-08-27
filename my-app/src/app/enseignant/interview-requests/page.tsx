@@ -231,67 +231,127 @@ export default function InterviewRequestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Demandes d'entretien</h1>
-          
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-pink-50 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-rose-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-red-700 to-rose-600 bg-clip-text text-transparent">
+              Demandes d'entretien
+            </h1>
+          </div>
+          <p className="text-gray-700 text-lg">Gérez vos demandes d'entretien et évaluations</p>
+        </div>
+
+        {/* Content Section */}
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8">
           {requests.length === 0 ? (
-            <div className="text-gray-500 text-center py-12">
-              Aucune demande d'entretien en attente.
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-gradient-to-r from-red-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Aucune demande d'entretien</h3>
+              <p className="text-gray-600">Les nouvelles demandes apparaîtront ici.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid gap-6">
               {requests.map((request) => (
-                <div key={request.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg text-gray-800">
-                        Demande de {request.candidate.name || request.candidate.email}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Reçue le {new Date(request.createdAt).toLocaleDateString("fr-FR")}
-                      </p>
-                      {request.dateEntretien && (
-                        <p className="text-sm text-green-600 mt-1">
-                          Entretien confirmé le {new Date(request.dateEntretien).toLocaleDateString("fr-FR")} à {new Date(request.dateEntretien).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                        </p>
-                      )}
-                      {request.evaluation && (
-                        <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-200">
-                          <p className="text-sm font-medium text-blue-800">Évaluation déjà effectuée</p>
-                          <p className="text-xs text-blue-600">Note: {request.evaluation.noteSur100}/100</p>
+                <div key={request.id} className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                      <div className="flex-1 space-y-4">
+                        {/* Candidate Info */}
+                        <div className="flex items-start gap-4">
+                          <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-rose-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                            <span className="text-white font-semibold text-lg">
+                              {(request.candidate.name || request.candidate.email).charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold text-gray-900 mb-1">
+                              {request.candidate.name || request.candidate.email}
+                            </h3>
+                            <div className="flex items-center gap-2 text-sm text-gray-500">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Reçue le {new Date(request.createdAt).toLocaleDateString("fr-FR", {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {!request.dateEntretien ? (
-                        <button
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setModalOpen(true);
-                            setSelectedDate("");
-                            setSelectedTime("");
-                            setMeetingLink("");
-                            setError("");
-                            setSuccess("");
-                          }}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
-                        >
-                          Choisir date/heure
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => openEvaluationModal(request)}
-                          className={`px-4 py-2 rounded-lg text-sm focus:ring-2 focus:outline-none ${
-                            request.evaluation 
-                              ? "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500"
-                              : "bg-orange-600 text-white hover:bg-orange-700 focus:ring-orange-500"
-                          }`}
-                        >
-                          {request.evaluation ? "Modifier évaluation" : "Ajouter note d'entretien"}
-                        </button>
-                      )}
+
+                        {/* Status Indicators */}
+                        <div className="flex flex-wrap gap-3">
+                          {request.dateEntretien && (
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-sm font-medium text-green-700">
+                                Confirmé le {new Date(request.dateEntretien).toLocaleDateString("fr-FR")} à {new Date(request.dateEntretien).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                            </div>
+                          )}
+
+                          {request.evaluation && (
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-full">
+                              <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="text-sm font-medium text-blue-700">
+                                Évalué • Note: {request.evaluation.noteSur100}/100
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="flex-shrink-0">
+                        {!request.dateEntretien ? (
+                          <button
+                            onClick={() => {
+                              setSelectedRequest(request);
+                              setModalOpen(true);
+                              setSelectedDate("");
+                              setSelectedTime("");
+                              setMeetingLink("");
+                              setError("");
+                              setSuccess("");
+                            }}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 focus:ring-4 focus:ring-red-200 focus:outline-none transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            Planifier l'entretien
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => openEvaluationModal(request)}
+                            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl focus:ring-4 focus:outline-none transition-all duration-200 shadow-lg hover:shadow-xl font-medium ${
+                              request.evaluation
+                                ? "bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-700 hover:to-green-700 focus:ring-emerald-200"
+                                : "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 focus:ring-red-200"
+                            }`}
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={request.evaluation ? "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" : "M12 6v6m0 0v6m0-6h6m-6 0H6"} />
+                            </svg>
+                            {request.evaluation ? "Modifier l'évaluation" : "Ajouter une évaluation"}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -303,31 +363,43 @@ export default function InterviewRequestsPage() {
 
       {/* Modal for choosing date/time and meeting link */}
       {modalOpen && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">Confirmer l'entretien</h2>
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Candidat : <strong>{selectedRequest.candidate.name || selectedRequest.candidate.email}</strong>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 border border-gray-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-rose-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Planifier l'entretien</h2>
+            </div>
+
+            <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
+              <p className="text-sm text-red-700 font-medium">
+                Candidat : <span className="font-semibold">{selectedRequest.candidate.name || selectedRequest.candidate.email}</span>
               </p>
             </div>
-            
-            <form onSubmit={handleAcceptRequest} className="space-y-4">
+
+            <form onSubmit={handleAcceptRequest} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="block">
-                  Date de l'entretien :
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Date de l'entretien
+                  </label>
                   <input
                     type="date"
                     required
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
                   />
-                </label>
+                </div>
 
-                <label className="block">
-                  Heure de l'entretien :
-                  <div className="mt-2">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Heure de l'entretien
+                  </label>
+                  <div className="w-full">
                     <TimePicker
                       name="time"
                       value={selectedTime}
@@ -335,25 +407,35 @@ export default function InterviewRequestsPage() {
                       disabled={!selectedDate}
                     />
                   </div>
-                </label>
+                </div>
               </div>
-              
-              <label className="block">
-                Lien de réunion :
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Lien de réunion
+                </label>
                 <input
                   type="url"
                   required
                   value={meetingLink}
                   onChange={(e) => setMeetingLink(e.target.value)}
                   placeholder="https://meet.google.com/..."
-                  className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
                 />
-              </label>
+              </div>
 
-              {error && <div className="text-red-600 text-sm">{error}</div>}
-              {success && <div className="text-green-600 text-sm">{success}</div>}
+              {error && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-red-700 text-sm font-medium">{error}</p>
+                </div>
+              )}
+              {success && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-green-700 text-sm font-medium">{success}</p>
+                </div>
+              )}
 
-              <div className="flex justify-end gap-3">
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -365,14 +447,14 @@ export default function InterviewRequestsPage() {
                     setError("");
                     setSuccess("");
                   }}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-6 py-3 text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 focus:outline-none transition-all duration-200 font-medium"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitting || !selectedDate || !selectedTime || !meetingLink}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-4 focus:ring-red-200 focus:outline-none transition-all duration-200 font-medium shadow-lg"
                 >
                   {submitting ? "Confirmation..." : "Confirmer l'entretien"}
                 </button>
@@ -384,120 +466,166 @@ export default function InterviewRequestsPage() {
 
       {/* Evaluation Modal */}
       {evaluationModalOpen && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Évaluation de l'entretien</h2>
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Candidat : <strong>{selectedRequest.candidate.name || selectedRequest.candidate.email}</strong>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-8 max-h-[90vh] overflow-y-auto border border-gray-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-r from-red-600 to-rose-600 rounded-xl flex items-center justify-center shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900">Évaluation de l'entretien</h2>
+            </div>
+
+            <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
+              <p className="text-sm text-red-700 font-medium">
+                Candidat : <span className="font-semibold">{selectedRequest.candidate.name || selectedRequest.candidate.email}</span>
               </p>
             </div>
-            
-            <form onSubmit={handleEvaluationSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="block">
-                  Français (sur 20) :
+
+            <form onSubmit={handleEvaluationSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Français (sur 20)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="20"
+                    step="0.5"
                     value={evaluationForm.francais}
                     onChange={(e) => setEvaluationForm({...evaluationForm, francais: e.target.value})}
-                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
+                    placeholder="0-20"
                   />
-                </label>
+                </div>
 
-                <label className="block">
-                  Anglais (sur 20) :
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Anglais (sur 20)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="20"
+                    step="0.5"
                     value={evaluationForm.anglais}
                     onChange={(e) => setEvaluationForm({...evaluationForm, anglais: e.target.value})}
-                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
+                    placeholder="0-20"
                   />
-                </label>
+                </div>
 
-                <label className="block">
-                  Motivation (sur 20) :
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Motivation (sur 20)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="20"
+                    step="0.5"
                     value={evaluationForm.motivation}
                     onChange={(e) => setEvaluationForm({...evaluationForm, motivation: e.target.value})}
-                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
+                    placeholder="0-20"
                   />
-                </label>
+                </div>
 
-                <label className="block">
-                  Culture Générale (sur 20) :
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Culture Générale (sur 20)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="20"
+                    step="0.5"
                     value={evaluationForm.cultureGenerale}
                     onChange={(e) => setEvaluationForm({...evaluationForm, cultureGenerale: e.target.value})}
-                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
+                    placeholder="0-20"
                   />
-                </label>
+                </div>
 
-                <label className="block">
-                  Bonus (sur 20) :
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Bonus (sur 20)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="20"
+                    step="0.5"
                     value={evaluationForm.bonus}
                     onChange={(e) => setEvaluationForm({...evaluationForm, bonus: e.target.value})}
-                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
+                    placeholder="0-20"
                   />
-                </label>
+                </div>
 
-                <label className="block">
-                  Note sur 100 :
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Note sur 100
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="100"
+                    step="0.5"
                     value={evaluationForm.noteSur100}
                     onChange={(e) => setEvaluationForm({...evaluationForm, noteSur100: e.target.value})}
-                    className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
+                    placeholder="0-100"
                   />
-                </label>
+                </div>
               </div>
 
-              <label className="block">
-                Compétence particulière :
-                <select
-                  value={evaluationForm.competence}
-                  onChange={(e) => setEvaluationForm({...evaluationForm, competence: e.target.value})}
-                  className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                >
-                  <option value="AUCUNE">Aucune</option>
-                  <option value="CULTURE">Culture</option>
-                  <option value="ART">Art</option>
-                  <option value="EXPERIENCE_ONG">Expérience ONG</option>
-                  <option value="SPORT">Sport</option>
-                </select>
-              </label>
-              
-              <label className="block">
-                Observations :
-                <textarea
-                  value={evaluationForm.observation}
-                  onChange={(e) => setEvaluationForm({...evaluationForm, observation: e.target.value})}
-                  rows={3}
-                  placeholder="Commentaires sur l'entretien..."
-                  className="border p-2 rounded w-full mt-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </label>
+              <div className="md:col-span-2 space-y-6">
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Compétence particulière
+                  </label>
+                  <select
+                    value={evaluationForm.competence}
+                    onChange={(e) => setEvaluationForm({...evaluationForm, competence: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200 bg-white"
+                  >
+                    <option value="AUCUNE">Aucune compétence particulière</option>
+                    <option value="CULTURE">Culture</option>
+                    <option value="ART">Art</option>
+                    <option value="EXPERIENCE_ONG">Expérience ONG</option>
+                    <option value="SPORT">Sport</option>
+                  </select>
+                </div>
 
-              {evaluationError && <div className="text-red-600 text-sm">{evaluationError}</div>}
-              {evaluationSuccess && <div className="text-green-600 text-sm">{evaluationSuccess}</div>}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    Observations
+                  </label>
+                  <textarea
+                    value={evaluationForm.observation}
+                    onChange={(e) => setEvaluationForm({...evaluationForm, observation: e.target.value})}
+                    rows={4}
+                    placeholder="Commentaires détaillés sur l'entretien, points forts, axes d'amélioration..."
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200 resize-none"
+                  />
+                </div>
+              </div>
 
-              <div className="flex justify-end gap-3">
+              {evaluationError && (
+                <div className="md:col-span-2 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-red-700 text-sm font-medium">{evaluationError}</p>
+                </div>
+              )}
+              {evaluationSuccess && (
+                <div className="md:col-span-2 p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <p className="text-green-700 text-sm font-medium">{evaluationSuccess}</p>
+                </div>
+              )}
+
+              <div className="md:col-span-2 flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -516,14 +644,14 @@ export default function InterviewRequestsPage() {
                     setEvaluationError("");
                     setEvaluationSuccess("");
                   }}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-6 py-3 text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 focus:outline-none transition-all duration-200 font-medium"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={evaluating}
-                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 disabled:opacity-50 disabled:cursor-not-allowed focus:ring-4 focus:ring-red-200 focus:outline-none transition-all duration-200 font-medium shadow-lg"
                 >
                   {evaluating ? "Enregistrement..." : "Enregistrer l'évaluation"}
                 </button>
