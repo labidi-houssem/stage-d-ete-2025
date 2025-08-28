@@ -3,25 +3,21 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// GET - Get candidate's CV (for teachers during interviews)
+// GET - Get candidate's CV (for admins)
 export async function GET(
   request: NextRequest,
   { params }: { params: { candidateId: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !["ENSEIGNANT", "ADMIN"].includes(session.user?.role)) {
+    if (!session || session.user?.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
         { status: 401 }
       );
     }
 
-    // For teachers, they can view any candidate CV (not just those with interviews)
-    // For admins, they can view all candidate CVs
-    // This allows teachers to review CVs before scheduling interviews
-
-    // Get candidate's CV
+    // Admins can view any candidate CV
     const cv = await prisma.cv.findUnique({
       where: { candidatId: params.candidateId },
       include: {
@@ -51,7 +47,8 @@ export async function GET(
         prenom: true,
         email: true,
         specialite: true,
-        telephone: true
+        telephone: true,
+        createdAt: true
       }
     });
 

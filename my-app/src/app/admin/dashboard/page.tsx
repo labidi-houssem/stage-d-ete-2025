@@ -67,6 +67,9 @@ export default function AdminDashboardPage() {
   const [assignedCandidateSearch, setAssignedCandidateSearch] = useState("");
   const [assignedCandidates, setAssignedCandidates] = useState<any[]>([]);
   const [loadingAssigned, setLoadingAssigned] = useState(true);
+  const [cvModalOpen, setCvModalOpen] = useState(false);
+  const [selectedCandidateCV, setSelectedCandidateCV] = useState<any>(null);
+  const [cvLoading, setCvLoading] = useState(false);
 
   const filteredCandidates = unassignedCandidates.filter(c =>
     (c.name || "").toLowerCase().includes(candidateSearch.toLowerCase()) ||
@@ -174,6 +177,33 @@ export default function AdminDashboardPage() {
       setUnassignedCandidates([]);
     } finally {
       setLoadingCandidates(false);
+    }
+  };
+
+  const openCVModal = async (candidateId: string) => {
+    console.log("Opening CV modal for candidate:", candidateId);
+    setCvLoading(true);
+    setCvModalOpen(true);
+    try {
+      const url = `/api/admin/candidate-cv/${candidateId}`;
+      console.log("Fetching CV from:", url);
+      const response = await fetch(url);
+      console.log("Response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("CV data received:", data);
+        setSelectedCandidateCV(data.cv);
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to fetch CV:", response.status, errorData);
+        setSelectedCandidateCV(null);
+      }
+    } catch (error) {
+      console.error("Error fetching CV:", error);
+      setSelectedCandidateCV(null);
+    } finally {
+      setCvLoading(false);
     }
   };
 
@@ -321,6 +351,89 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">CVs des Candidats</h3>
+                <p className="text-sm text-gray-600">Consulter tous les CVs</p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push("/admin/candidates-cv")}
+              className="w-full px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-200 font-medium"
+            >
+              Voir les CVs
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Gestion Utilisateurs</h3>
+                <p className="text-sm text-gray-600">Gérer les comptes</p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push("/admin/users")}
+              className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium"
+            >
+              Gérer les utilisateurs
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Créer Utilisateurs</h3>
+                <p className="text-sm text-gray-600">Ajouter des comptes</p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push("/admin/create-users")}
+              className="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 font-medium"
+            >
+              Créer des utilisateurs
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Statistiques</h3>
+                <p className="text-sm text-gray-600">Voir les rapports</p>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push("/admin/statistics")}
+              className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 font-medium"
+            >
+              Voir les statistiques
+            </button>
+          </div>
+        </div>
+
         {/* Main Content Sections */}
         <div className="space-y-12">
           {/* Unassigned Candidates Section */}
@@ -397,16 +510,25 @@ export default function AdminDashboardPage() {
                           <td className="px-6 py-4 text-gray-700">{c.email}</td>
                           <td className="px-6 py-4 text-gray-600">{new Date(c.createdAt).toLocaleDateString("fr-FR")}</td>
                           <td className="px-6 py-4">
-                            <button
-                              className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
-                              onClick={() => {
-                                setCandidateToAssign(c);
-                                setAssignModalOpen(true);
-                                setSelectedEnseignantId("");
-                              }}
-                            >
-                              📝 Demander entretien
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => openCVModal(c.id)}
+                                className="px-3 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-lg hover:from-rose-700 hover:to-pink-700 focus:ring-2 focus:ring-rose-500 focus:outline-none transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+                                title="Voir le CV du candidat"
+                              >
+                                👁️ CV
+                              </button>
+                              <button
+                                className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 focus:ring-2 focus:ring-red-500 focus:outline-none transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+                                onClick={() => {
+                                  setCandidateToAssign(c);
+                                  setAssignModalOpen(true);
+                                  setSelectedEnseignantId("");
+                                }}
+                              >
+                                📝 Demander entretien
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -772,6 +894,276 @@ export default function AdminDashboardPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* CV Modal */}
+        {cvModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-100">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-red-600 to-rose-600">
+                <h3 className="text-xl font-bold text-white">CV du Candidat - Vue Administrateur</h3>
+                <button
+                  onClick={() => {
+                    setCvModalOpen(false);
+                    setSelectedCandidateCV(null);
+                  }}
+                  className="p-2 text-white hover:text-gray-200 hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                {cvLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                      <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-red-600 border-r-transparent"></div>
+                      <p className="mt-4 text-gray-600">Chargement du CV...</p>
+                    </div>
+                  </div>
+                ) : selectedCandidateCV ? (
+                  <div className="space-y-6">
+                    {/* Admin Notice */}
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.414-1.414l-4 4L9 19.414l-4-4 4-4z" />
+                        </svg>
+                        <span className="text-red-800 font-medium">Vue Administrateur - Évaluation avant assignation</span>
+                      </div>
+                    </div>
+
+                    {/* Personal Info */}
+                    {selectedCandidateCV.personalInfo && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Informations personnelles
+                        </h4>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <h5 className="text-xl font-bold text-gray-900 mb-2">
+                            {selectedCandidateCV.personalInfo.firstName} {selectedCandidateCV.personalInfo.lastName}
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                            {selectedCandidateCV.personalInfo.email && (
+                              <p>📧 {selectedCandidateCV.personalInfo.email}</p>
+                            )}
+                            {selectedCandidateCV.personalInfo.phone && (
+                              <p>📱 {selectedCandidateCV.personalInfo.phone}</p>
+                            )}
+                            {selectedCandidateCV.personalInfo.address && (
+                              <p>📍 {selectedCandidateCV.personalInfo.address}</p>
+                            )}
+                          </div>
+                          {selectedCandidateCV.personalInfo.summary && (
+                            <div className="mt-3">
+                              <p className="text-sm font-medium text-gray-700 mb-1">Résumé professionnel:</p>
+                              <p className="text-gray-700">{selectedCandidateCV.personalInfo.summary}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Education */}
+                    {selectedCandidateCV.education && selectedCandidateCV.education.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                          </svg>
+                          Formation ({selectedCandidateCV.education.length})
+                        </h4>
+                        <div className="space-y-3">
+                          {selectedCandidateCV.education.map((edu: any) => (
+                            <div key={edu.id} className="bg-gray-50 rounded-lg p-4">
+                              <h5 className="font-semibold text-gray-900">{edu.degree}</h5>
+                              <p className="text-red-600 font-medium">{edu.institution}</p>
+                              {edu.fieldOfStudy && <p className="text-gray-600">{edu.fieldOfStudy}</p>}
+                              <p className="text-sm text-gray-500">
+                                {new Date(edu.startDate).getFullYear()} - {edu.current ? "En cours" : new Date(edu.endDate).getFullYear()}
+                              </p>
+                              {edu.grade && <p className="text-sm text-gray-600">Note: {edu.grade}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Experience */}
+                    {selectedCandidateCV.experience && selectedCandidateCV.experience.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0H8m8 0v6a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0V4a2 2 0 00-2-2H10a2 2 0 00-2 2v2" />
+                          </svg>
+                          Expérience professionnelle ({selectedCandidateCV.experience.length})
+                        </h4>
+                        <div className="space-y-3">
+                          {selectedCandidateCV.experience.map((exp: any) => (
+                            <div key={exp.id} className="bg-gray-50 rounded-lg p-4">
+                              <h5 className="font-semibold text-gray-900">{exp.position}</h5>
+                              <p className="text-red-600 font-medium">{exp.company}</p>
+                              {exp.location && <p className="text-gray-600">{exp.location}</p>}
+                              <p className="text-sm text-gray-500">
+                                {new Date(exp.startDate).getFullYear()} - {exp.current ? "En cours" : new Date(exp.endDate).getFullYear()}
+                              </p>
+                              {exp.description && <p className="text-gray-700 mt-2">{exp.description}</p>}
+                              {exp.achievements && exp.achievements.length > 0 && (
+                                <ul className="list-disc list-inside mt-2 text-gray-700 text-sm">
+                                  {exp.achievements.map((achievement: string, index: number) => (
+                                    <li key={index}>{achievement}</li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Skills */}
+                    {selectedCandidateCV.skills && selectedCandidateCV.skills.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Compétences ({selectedCandidateCV.skills.length})
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedCandidateCV.skills.map((skill: any) => (
+                            <span key={skill.id} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                              {skill.name} ({skill.level}/5)
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Languages */}
+                    {selectedCandidateCV.languages && selectedCandidateCV.languages.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                          </svg>
+                          Langues ({selectedCandidateCV.languages.length})
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedCandidateCV.languages.map((lang: any) => (
+                            <span key={lang.id} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                              {lang.name} - {lang.level}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Projects */}
+                    {selectedCandidateCV.projects && selectedCandidateCV.projects.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                          </svg>
+                          Projets ({selectedCandidateCV.projects.length})
+                        </h4>
+                        <div className="space-y-3">
+                          {selectedCandidateCV.projects.map((project: any) => (
+                            <div key={project.id} className="bg-gray-50 rounded-lg p-4">
+                              <h5 className="font-semibold text-gray-900">{project.name}</h5>
+                              {project.description && <p className="text-gray-700 mt-1">{project.description}</p>}
+                              {project.technologies && project.technologies.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {project.technologies.map((tech: string, index: number) => (
+                                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                                      {tech}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Certifications */}
+                    {selectedCandidateCV.certifications && selectedCandidateCV.certifications.length > 0 && (
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                          </svg>
+                          Certifications ({selectedCandidateCV.certifications.length})
+                        </h4>
+                        <div className="space-y-3">
+                          {selectedCandidateCV.certifications.map((cert: any) => (
+                            <div key={cert.id} className="bg-gray-50 rounded-lg p-4">
+                              <h5 className="font-semibold text-gray-900">{cert.name}</h5>
+                              <p className="text-red-600 font-medium">{cert.issuer}</p>
+                              <p className="text-sm text-gray-500">
+                                Obtenu le {new Date(cert.issueDate).toLocaleDateString('fr-FR')}
+                                {cert.expiryDate && ` • Expire le ${new Date(cert.expiryDate).toLocaleDateString('fr-FR')}`}
+                              </p>
+                              {cert.credentialId && <p className="text-sm text-gray-600">ID: {cert.credentialId}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Aucun CV disponible</h3>
+                    <p className="text-gray-600">Ce candidat n'a pas encore créé de CV.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-between items-center gap-3 p-6 border-t border-gray-200 bg-gray-50">
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">💡 Conseil:</span> Évaluez le profil avant d'assigner à un enseignant
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setCvModalOpen(false);
+                      setSelectedCandidateCV(null);
+                    }}
+                    className="px-6 py-3 text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                  >
+                    Fermer
+                  </button>
+                  {selectedCandidateCV && (
+                    <button
+                      onClick={() => {
+                        setCvModalOpen(false);
+                        const candidateId = selectedCandidateCV.candidatId;
+                        router.push(`/admin/candidate-cv/${candidateId}`);
+                      }}
+                      className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-colors"
+                    >
+                      Voir en pleine page
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}

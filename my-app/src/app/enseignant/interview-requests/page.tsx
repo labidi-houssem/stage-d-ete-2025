@@ -40,6 +40,9 @@ export default function InterviewRequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState<InterviewRequest | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
+  const [cvModalOpen, setCvModalOpen] = useState(false);
+  const [selectedCandidateCV, setSelectedCandidateCV] = useState<any>(null);
+  const [cvLoading, setCvLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
@@ -215,6 +218,26 @@ export default function InterviewRequestsPage() {
     setEvaluationSuccess("");
   };
 
+  const openCVModal = async (candidateId: string) => {
+    setCvLoading(true);
+    setCvModalOpen(true);
+    try {
+      const response = await fetch(`/api/enseignant/candidate-cv/${candidateId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedCandidateCV(data.cv);
+      } else {
+        console.error("Failed to fetch CV");
+        setSelectedCandidateCV(null);
+      }
+    } catch (error) {
+      console.error("Error fetching CV:", error);
+      setSelectedCandidateCV(null);
+    } finally {
+      setCvLoading(false);
+    }
+  };
+
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -316,8 +339,33 @@ export default function InterviewRequestsPage() {
                         </div>
                       </div>
 
-                      {/* Action Button */}
-                      <div className="flex-shrink-0">
+                      {/* Action Buttons */}
+                      <div className="flex-shrink-0 flex flex-col gap-3">
+                        {/* CV Buttons - Always visible */}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => openCVModal(request.candidate.id)}
+                            className="inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-xl hover:from-rose-700 hover:to-pink-700 focus:ring-4 focus:ring-rose-200 focus:outline-none transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                            title="Voir CV dans une popup"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            CV
+                          </button>
+                          <button
+                            onClick={() => router.push(`/enseignant/candidate-cv/${request.candidate.id}`)}
+                            className="inline-flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 focus:ring-4 focus:ring-red-200 focus:outline-none transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
+                            title="Ouvrir CV dans une nouvelle page"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        {/* Main Action Button */}
                         {!request.dateEntretien ? (
                           <button
                             onClick={() => {
@@ -660,6 +708,164 @@ export default function InterviewRequestsPage() {
           </div>
         </div>
       )}
+
+      {/* CV Modal */}
+      {cvModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-100">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900">CV du Candidat</h3>
+              <button
+                onClick={() => {
+                  setCvModalOpen(false);
+                  setSelectedCandidateCV(null);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {cvLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+                    <p className="mt-4 text-gray-600">Chargement du CV...</p>
+                  </div>
+                </div>
+              ) : selectedCandidateCV ? (
+                <div className="space-y-6">
+                  {/* Personal Info */}
+                  {selectedCandidateCV.personalInfo && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">Informations personnelles</h4>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <h5 className="text-xl font-bold text-gray-900 mb-2">
+                          {selectedCandidateCV.personalInfo.firstName} {selectedCandidateCV.personalInfo.lastName}
+                        </h5>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+                          {selectedCandidateCV.personalInfo.email && (
+                            <p>📧 {selectedCandidateCV.personalInfo.email}</p>
+                          )}
+                          {selectedCandidateCV.personalInfo.phone && (
+                            <p>📱 {selectedCandidateCV.personalInfo.phone}</p>
+                          )}
+                          {selectedCandidateCV.personalInfo.address && (
+                            <p>📍 {selectedCandidateCV.personalInfo.address}</p>
+                          )}
+                        </div>
+                        {selectedCandidateCV.personalInfo.summary && (
+                          <p className="mt-3 text-gray-700">{selectedCandidateCV.personalInfo.summary}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Education */}
+                  {selectedCandidateCV.education && selectedCandidateCV.education.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">Formation</h4>
+                      <div className="space-y-3">
+                        {selectedCandidateCV.education.map((edu: any) => (
+                          <div key={edu.id} className="bg-gray-50 rounded-lg p-4">
+                            <h5 className="font-semibold text-gray-900">{edu.degree}</h5>
+                            <p className="text-blue-600 font-medium">{edu.institution}</p>
+                            {edu.fieldOfStudy && <p className="text-gray-600">{edu.fieldOfStudy}</p>}
+                            <p className="text-sm text-gray-500">
+                              {new Date(edu.startDate).getFullYear()} - {edu.current ? "En cours" : new Date(edu.endDate).getFullYear()}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Experience */}
+                  {selectedCandidateCV.experience && selectedCandidateCV.experience.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">Expérience</h4>
+                      <div className="space-y-3">
+                        {selectedCandidateCV.experience.map((exp: any) => (
+                          <div key={exp.id} className="bg-gray-50 rounded-lg p-4">
+                            <h5 className="font-semibold text-gray-900">{exp.position}</h5>
+                            <p className="text-blue-600 font-medium">{exp.company}</p>
+                            <p className="text-sm text-gray-500">
+                              {new Date(exp.startDate).getFullYear()} - {exp.current ? "En cours" : new Date(exp.endDate).getFullYear()}
+                            </p>
+                            {exp.description && <p className="text-gray-700 mt-2">{exp.description}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Skills */}
+                  {selectedCandidateCV.skills && selectedCandidateCV.skills.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">Compétences</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCandidateCV.skills.map((skill: any) => (
+                          <span key={skill.id} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                            {skill.name} ({skill.level}/5)
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Languages */}
+                  {selectedCandidateCV.languages && selectedCandidateCV.languages.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">Langues</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCandidateCV.languages.map((lang: any) => (
+                          <span key={lang.id} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                            {lang.name} - {lang.level}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-600">Ce candidat n'a pas encore créé de CV.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setCvModalOpen(false);
+                  setSelectedCandidateCV(null);
+                }}
+                className="px-6 py-3 text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                Fermer
+              </button>
+              {selectedCandidateCV && (
+                <button
+                  onClick={() => {
+                    setCvModalOpen(false);
+                    const candidateId = selectedCandidateCV.candidatId;
+                    router.push(`/enseignant/candidate-cv/${candidateId}`);
+                  }}
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 transition-colors"
+                >
+                  Voir en pleine page
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-} 
+}
