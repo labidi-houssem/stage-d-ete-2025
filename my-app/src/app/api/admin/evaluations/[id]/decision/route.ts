@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,7 +15,7 @@ export async function POST(
     }
 
     const { decision } = await request.json();
-    const evaluationId = params.id;
+    const { id: evaluationId } = await params;
 
     if (!decision || !['ACCEPTED', 'REJECTED'].includes(decision)) {
       return NextResponse.json({ error: "Invalid decision" }, { status: 400 });
@@ -51,10 +51,9 @@ export async function POST(
       await prisma.notification.create({
         data: {
           userId: evaluation.candidatId,
-          title: "Félicitations ! Vous êtes accepté(e)",
-          message: `Votre candidature a été acceptée. Vous êtes maintenant étudiant(e) à ESPRIT. Note obtenue: ${evaluation.noteSur100}/100`,
+          message: `Félicitations ! Vous êtes accepté(e). Votre candidature a été acceptée. Vous êtes maintenant étudiant(e) à ESPRIT. Note obtenue: ${evaluation.noteSur100}/100`,
           type: "SUCCESS",
-          isRead: false
+          read: false
         }
       });
     } else if (decision === 'REJECTED') {
@@ -62,10 +61,9 @@ export async function POST(
       await prisma.notification.create({
         data: {
           userId: evaluation.candidatId,
-          title: "Candidature non retenue",
-          message: `Nous regrettons de vous informer que votre candidature n'a pas été retenue cette fois-ci. Note obtenue: ${evaluation.noteSur100}/100`,
+          message: `Candidature non retenue. Nous regrettons de vous informer que votre candidature n'a pas été retenue cette fois-ci. Note obtenue: ${evaluation.noteSur100}/100`,
           type: "ERROR",
-          isRead: false
+          read: false
         }
       });
     }
