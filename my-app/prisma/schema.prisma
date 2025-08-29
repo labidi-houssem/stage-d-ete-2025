@@ -28,6 +28,7 @@ model User {
   dateNaissance                DateTime?
   gouvernorat                  String?
   specialite                   String?
+  github                       String?
   role                         UserRole              @default(CANDIDAT)
   disponibilites               Disponibilite[]       @relation("EnseignantDisponibilites")
   evaluationsAsCandidat        InterviewEvaluation[] @relation("EvaluationCandidat")
@@ -104,6 +105,7 @@ model InterviewEvaluation {
   noteSur100      Int?
   observation     String?
   competence      Competence?
+  status          EvaluationStatus @default(PENDING)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   candidat        User        @relation("EvaluationCandidat", fields: [candidatId], references: [id], onDelete: Cascade)
@@ -116,6 +118,12 @@ enum UserRole {
   ENSEIGNANT
   CANDIDAT
   ETUDIANT
+}
+
+enum EvaluationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 enum ReservationStatus {

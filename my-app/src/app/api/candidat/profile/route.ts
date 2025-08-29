@@ -31,6 +31,8 @@ export async function GET() {
         dateNaissance: true,
         gouvernorat: true,
         specialite: true,
+        github: true,
+        image: true,
         createdAt: true,
         updatedAt: true,
       }
@@ -69,6 +71,8 @@ export async function PUT(request: NextRequest) {
       address,
       gouvernorat,
       specialite,
+      github,
+      profileImage,
       currentPassword,
       newPassword,
     } = body;
@@ -111,16 +115,24 @@ export async function PUT(request: NextRequest) {
       });
     }
     // Update profile fields
+    const updateData: any = {
+      nom,
+      prenom,
+      telephone,
+      address,
+      gouvernorat,
+      specialite,
+      github,
+    };
+
+    // Only update image if provided
+    if (profileImage !== undefined) {
+      updateData.image = profileImage;
+    }
+
     await prisma.user.update({
       where: { id: session.user.id },
-      data: {
-        nom,
-        prenom,
-        telephone,
-        address,
-        gouvernorat,
-        specialite,
-      },
+      data: updateData,
     });
     return NextResponse.json({ success: true });
   } catch (error) {

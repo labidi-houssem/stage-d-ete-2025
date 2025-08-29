@@ -17,6 +17,8 @@ interface CVData {
     summary: string;
     linkedIn: string;
     website: string;
+    github: string;
+    profileImage: string;
   };
   education: any[];
   experience: any[];
@@ -192,6 +194,7 @@ export default function CVBuilder() {
 
 // Personal Info Section Component
 function PersonalInfoSection({ cv, setCv }: { cv: CVData; setCv: (cv: CVData) => void }) {
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     firstName: cv.personalInfo?.firstName || "",
     lastName: cv.personalInfo?.lastName || "",
@@ -201,21 +204,114 @@ function PersonalInfoSection({ cv, setCv }: { cv: CVData; setCv: (cv: CVData) =>
     city: cv.personalInfo?.city || "",
     summary: cv.personalInfo?.summary || "",
     linkedIn: cv.personalInfo?.linkedIn || "",
-    website: cv.personalInfo?.website || ""
+    website: cv.personalInfo?.website || "",
+    github: cv.personalInfo?.github || "",
+    profileImage: cv.personalInfo?.profileImage || ""
   });
+
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(cv.personalInfo?.profileImage || null);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Auto-populate profile image from user's profile if not set
+  useEffect(() => {
+    if (session?.user?.image && !formData.profileImage) {
+      setFormData(prev => ({ ...prev, profileImage: session.user.image || "" }));
+      setImagePreview(session.user.image);
+    }
+  }, [session, formData.profileImage]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        alert("Veuillez sélectionner un fichier image valide");
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert("L'image ne doit pas dépasser 5MB");
+        return;
+      }
+
+      setSelectedImage(file);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!selectedImage) return null;
+
+    setUploadingImage(true);
+    const formDataUpload = new FormData();
+    formDataUpload.append('image', selectedImage);
+
+    try {
+      const response = await fetch('/api/candidat/upload-image', {
+        method: 'POST',
+        body: formDataUpload,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return result.imageUrl;
+      } else {
+        throw new Error('Erreur lors du téléchargement de l\'image');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      throw error;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const useProfileImage = () => {
+    if (session?.user?.image) {
+      setFormData(prev => ({ ...prev, profileImage: session.user.image || "" }));
+      setImagePreview(session.user.image);
+      setSelectedImage(null);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
     try {
+      let imageUrl = formData.profileImage;
+
+      // Upload new image if selected
+      if (selectedImage) {
+        try {
+          imageUrl = await uploadImage();
+        } catch (error) {
+          alert("Erreur lors du téléchargement de l'image");
+          setSaving(false);
+          return;
+        }
+      }
+
+      const dataToSave = {
+        ...formData,
+        profileImage: imageUrl
+      };
+
       const response = await fetch(`/api/candidat/cv/${cv.id}/personal`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(dataToSave)
       });
+
       if (response.ok) {
         const data = await response.json();
         setCv({ ...cv, personalInfo: data.personalInfo });
+        setSelectedImage(null); // Clear selected image after successful save
+        setFormData(prev => ({ ...prev, profileImage: imageUrl || "" }));
       }
     } catch (error) {
       console.error("Error saving personal info:", error);
@@ -238,6 +334,91 @@ function PersonalInfoSection({ cv, setCv }: { cv: CVData; setCv: (cv: CVData) =>
         >
           {saving ? "Enregistrement..." : "Enregistrer"}
         </button>
+      </div>
+
+      {/* Profile Image Section */}
+      <div className="mb-8 p-6 bg-gray-50 rounded-xl">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Photo de profil</h3>
+
+        <div className="flex items-start gap-6">
+          {/* Current Image */}
+          <div className="flex-shrink-0">
+            <div className="relative w-24 h-24">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gradient-to-r from-red-600 to-rose-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-xl font-bold text-white">
+                    {formData.firstName?.[0]?.toUpperCase()}{formData.lastName?.[0]?.toUpperCase()}
+                  </span>
+                </div>
+              )}
+
+              {/* Upload Button */}
+              <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-700 transition-colors shadow-lg">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          {/* Image Options */}
+          <div className="flex-1">
+            <div className="space-y-3">
+              {session?.user?.image && (
+                <button
+                  type="button"
+                  onClick={useProfileImage}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Utiliser ma photo de profil
+                </button>
+              )}
+
+              {selectedImage && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Nouvelle image sélectionnée</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setImagePreview(formData.profileImage || null);
+                    }}
+                    className="text-xs text-red-600 hover:text-red-700"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              )}
+
+              {uploadingImage && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+                  Téléchargement...
+                </div>
+              )}
+
+              <p className="text-xs text-gray-500">
+                Formats acceptés: JPG, PNG, GIF. Taille max: 5MB
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -342,6 +523,19 @@ function PersonalInfoSection({ cv, setCv }: { cv: CVData; setCv: (cv: CVData) =>
             onChange={(e) => setFormData({ ...formData, website: e.target.value })}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
             placeholder="https://votre-site.com"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            GitHub
+          </label>
+          <input
+            type="url"
+            value={formData.github}
+            onChange={(e) => setFormData({ ...formData, github: e.target.value })}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 focus:ring-red-100 focus:border-red-500 focus:outline-none transition-all duration-200"
+            placeholder="https://github.com/votre-username"
           />
         </div>
       </div>

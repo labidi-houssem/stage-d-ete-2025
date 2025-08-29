@@ -575,10 +575,9 @@ export default function AdminDashboardPage() {
                       enseignantName: c.enseignant?.name || "",
                       enseignantEmail: c.enseignant?.email || "",
                       status: c.status,
-                      noteSur100: c.evaluation?.noteSur100 || "Non évalué",
                       createdAt: new Date(c.createdAt).toLocaleDateString("fr-FR")
                     }));
-                    exportToCSV(exportData, ["name", "email", "enseignantName", "enseignantEmail", "status", "noteSur100", "createdAt"], "candidats_assignes.csv");
+                    exportToCSV(exportData, ["name", "email", "enseignantName", "enseignantEmail", "status", "createdAt"], "candidats_assignes.csv");
                   }}
                 >
                   📊 Exporter CSV
@@ -610,7 +609,6 @@ export default function AdminDashboardPage() {
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Statut</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Date d'entretien</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Date d'assignation</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 bg-gray-50">Évaluation</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
@@ -664,32 +662,6 @@ export default function AdminDashboardPage() {
                             )}
                           </td>
                           <td className="px-6 py-4 text-gray-600">{new Date(c.requestCreatedAt).toLocaleDateString("fr-FR")}</td>
-                          <td className="px-6 py-4">
-                            {c.evaluation ? (
-                              <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
-                                <div className="text-sm font-bold text-blue-800 mb-2 text-center">
-                                  🎯 {c.evaluation.noteSur100}/100
-                                </div>
-                                <div className="text-xs text-blue-700 space-y-1">
-                                  {c.evaluation.francais && <div>🇫🇷 Français: {c.evaluation.francais}/20</div>}
-                                  {c.evaluation.anglais && <div>🇬🇧 Anglais: {c.evaluation.anglais}/20</div>}
-                                  {c.evaluation.motivation && <div>💪 Motivation: {c.evaluation.motivation}/20</div>}
-                                  {c.evaluation.cultureGenerale && <div>📚 Culture: {c.evaluation.cultureGenerale}/20</div>}
-                                  {c.evaluation.bonus && <div>⭐ Bonus: {c.evaluation.bonus}/20</div>}
-                                  {c.evaluation.competence && c.evaluation.competence !== 'AUCUNE' && (
-                                    <div>🎯 Compétence: {c.evaluation.competence}</div>
-                                  )}
-                                </div>
-                                {c.evaluation.observation && (
-                                  <div className="mt-2 text-xs text-blue-800 bg-blue-100 p-2 rounded-lg">
-                                    💭 {c.evaluation.observation}
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-gray-400 text-sm">Non évalué</span>
-                            )}
-                          </td>
                         </tr>
                       ))}
                     </tbody>
