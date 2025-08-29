@@ -236,10 +236,12 @@ export default function EtudiantProfilePage() {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-          <p className="mt-4 text-lg">Chargement du profil...</p>
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 flex items-center justify-center">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-lg font-medium text-gray-700">Chargement de votre profil...</span>
+          </div>
         </div>
       </div>
     );
@@ -247,127 +249,115 @@ export default function EtudiantProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-red-600">Erreur lors du chargement du profil</p>
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 flex items-center justify-center">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Profil non trouvé</h2>
+          <p className="text-gray-600">Impossible de charger les informations de votre profil.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-white to-rose-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Mon Profil Étudiant
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-red-700 to-rose-600 bg-clip-text text-transparent mb-2">
+            Mon Profil Étudiant ESPRIT
           </h1>
           <p className="text-gray-600">
-            Consultez et modifiez vos informations personnelles
+            Gérez vos informations personnelles et paramètres de compte
           </p>
         </div>
 
+        {/* Message */}
         {message && (
-          <div className={`mb-6 p-4 rounded-lg ${
-            message.startsWith('✅') 
-              ? 'bg-green-100 text-green-700 border border-green-200' 
-              : 'bg-red-100 text-red-700 border border-red-200'
+          <div className={`mb-6 p-4 rounded-xl border ${
+            message.includes('✅')
+              ? 'bg-green-50 border-green-200 text-green-700'
+              : 'bg-red-50 border-red-200 text-red-700'
           }`}>
-            {message}
+            <div className="flex items-center gap-3">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                message.includes('✅') ? 'bg-green-500' : 'bg-red-500'
+              }`}>
+                {message.includes('✅') ? (
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+              <span className="font-medium">{message}</span>
+            </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-1">
-          {/* Read-only Information */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Profile Info Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb- text-gray-00">
-                Informations de Base
-              </h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {profile.email}
-                  </p>
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6">
+              <div className="text-center">
+                {/* Avatar */}
+                <div className="w-24 h-24 bg-gradient-to-r from-red-600 to-rose-600 rounded-full flex items-center justify-center shadow-lg mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">
+                    {profile.prenom?.[0]?.toUpperCase()}{profile.nom?.[0]?.toUpperCase()}
+                  </span>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CIN
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {profile.cin || "Non renseigné"}
-                  </p>
-                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  {profile.prenom} {profile.nom}
+                </h2>
+                <p className="text-gray-600 mb-2">{profile.email}</p>
+                <span className="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                  {profile.specialite || 'Spécialité non définie'}
+                </span>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date de naissance
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {profile.dateNaissance ? formatDate(profile.dateNaissance) : "Non renseignée"}
-                  </p>
+              {/* Quick Info */}
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 114 0v2m-4 0a2 2 0 104 0m-4 0V4a2 2 0 014 0v2" />
+                  </svg>
+                  <span className="text-gray-600">CIN: {profile.cin || 'Non renseigné'}</span>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nationalité
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {profile.nationalite || "Non renseignée"}
-                  </p>
+                <div className="flex items-center gap-3 text-sm">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span className="text-gray-600">{profile.telephone || 'Non renseigné'}</span>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Civilité
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {profile.civilite || "Non renseignée"}
-                  </p>
+                <div className="flex items-center gap-3 text-sm">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span className="text-gray-600">{profile.gouvernorat || 'Non renseigné'}</span>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date de délivrance CIN
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {profile.dateDelivrance ? formatDate(profile.dateDelivrance) : "Non renseignée"}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lieu de délivrance
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {profile.lieuDelivrance || "Non renseigné"}
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Membre depuis
-                  </label>
-                  <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded border">
-                    {formatDate(profile.createdAt)}
-                  </p>
+                <div className="flex items-center gap-3 text-sm">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-gray-600">Membre depuis {formatDate(profile.createdAt)}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Editable Information */}
+          {/* Edit Form */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-6 text-gray-900">
-                Modifier mes informations
-              </h2>
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Modifier mes informations</h3>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Personal Information */}
@@ -500,10 +490,10 @@ export default function EtudiantProfilePage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className={`px-6 py-3 rounded-lg font-medium ${
+                    className={`px-8 py-3 rounded-xl font-medium transition-all duration-200 ${
                       saving
                         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                        : "bg-primary text-white hover:bg-opacity-90"
+                        : "bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 shadow-lg hover:shadow-xl transform hover:scale-105"
                     }`}
                   >
                     {saving ? (

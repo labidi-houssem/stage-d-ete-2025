@@ -86,23 +86,23 @@ export default function EtudiantDashboardPage() {
 
         {/* Welcome Card */}
         {profile && (
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg p-6 mb-8 text-white">
+          <div className="bg-gradient-to-r from-red-600 to-red-700 rounded-lg shadow-lg p-6 mb-8 text-white">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold mb-2">
                   🎓 Félicitations {profile.prenom} {profile.nom} !
                 </h2>
-                <p className="text-blue-100">
+                <p className="text-red-100">
                   Vous êtes maintenant un étudiant admis. Votre entretien a été conclu avec succès.
                 </p>
-                <p className="text-blue-100 mt-2">
+                <p className="text-red-100 mt-2">
                   <strong>Spécialité:</strong> {profile.specialite || "Non renseignée"} | 
                   <strong> Gouvernorat:</strong> {profile.gouvernorat || "Non renseigné"}
                 </p>
               </div>
               <div className="text-right">
                 <div className="text-4xl mb-2">🎉</div>
-                <p className="text-sm text-blue-100">
+                <p className="text-sm text-red-100">
                   Admis le {formatDate(profile.createdAt)}
                 </p>
               </div>
@@ -112,20 +112,20 @@ export default function EtudiantDashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Link href="/etudiant/profile">
+          <Link href="/etudiant/cv">
             <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
               <div className="flex items-center mb-4">
-                <div className="bg-blue-100 p-3 rounded-lg">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <div className="bg-red-100 p-3 rounded-lg">
+                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Mon Profil
+                Mon CV
               </h3>
               <p className="text-gray-600">
-                Consultez et modifiez vos informations personnelles
+                Consultez et modifiez votre CV professionnel
               </p>
             </div>
           </Link>
@@ -153,8 +153,8 @@ export default function EtudiantDashboardPage() {
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-4">
-              <div className="bg-purple-100 p-3 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-red-100 p-3 rounded-lg">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
@@ -166,7 +166,7 @@ export default function EtudiantDashboardPage() {
               Accédez à vos informations de formation
             </p>
             <div className="mt-3">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
                 📚 {profile?.specialite || "Spécialité à définir"}
               </span>
             </div>
