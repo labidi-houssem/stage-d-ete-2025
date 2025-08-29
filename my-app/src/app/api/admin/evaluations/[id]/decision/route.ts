@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+type DecisionType = 'ACCEPTED' | 'REJECTED';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -21,6 +23,8 @@ export async function POST(
       return NextResponse.json({ error: "Invalid decision" }, { status: 400 });
     }
 
+    const typedDecision = decision as DecisionType;
+
     // Find the evaluation with candidate information
     const evaluation = await prisma.interviewEvaluation.findUnique({
       where: { id: evaluationId },
@@ -36,11 +40,11 @@ export async function POST(
     // Update the evaluation status
     await prisma.interviewEvaluation.update({
       where: { id: evaluationId },
-      data: { status: decision }
+      data: { status: typedDecision }
     });
 
     // If accepted, convert candidate to student
-    if (decision === 'ACCEPTED') {
+    if (typedDecision === 'ACCEPTED') {
       // Update user role to ETUDIANT
       await prisma.user.update({
         where: { id: evaluation.candidatId },
@@ -56,7 +60,7 @@ export async function POST(
           read: false
         }
       });
-    } else if (decision === 'REJECTED') {
+    } else if (typedDecision === 'REJECTED') {
       // Create notification for the candidate
       await prisma.notification.create({
         data: {
@@ -69,8 +73,8 @@ export async function POST(
     }
 
     return NextResponse.json({ 
-      message: `Candidat ${decision === 'ACCEPTED' ? 'accepté' : 'refusé'} avec succès`,
-      status: decision
+      message: `Candidat ${typedDecision === 'ACCEPTED' ? 'accepté' : 'refusé'} avec succès`,
+      status: typedDecision
     });
 
   } catch (error) {
