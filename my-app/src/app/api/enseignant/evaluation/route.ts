@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { notifyNewEvaluation } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,6 +98,36 @@ export async function POST(request: NextRequest) {
         competence: competence === "AUCUNE" ? null : competence,
       },
     });
+
+    // Notify admins about new evaluation
+    try {
+      const candidat = await prisma.user.findUnique({
+        where: { id: interviewRequest.candidateId },
+        select: { name: true, prenom: true, nom: true }
+      });
+
+      const enseignant = await prisma.user.findUnique({
+        where: { id: enseignantId },
+        select: { name: true, prenom: true, nom: true }
+      });
+
+      await notifyNewEvaluation({
+        id: evaluation.id,
+        candidatId: interviewRequest.candidateId,
+        enseignantId: enseignantId,
+        note: noteSur100 ? parseInt(noteSur100) : 0,
+        commentaire: observation,
+        candidatName: candidat?.prenom && candidat?.nom 
+          ? `${candidat.prenom} ${candidat.nom}` 
+          : candidat?.name || 'Candidat',
+        enseignantName: enseignant?.prenom && enseignant?.nom 
+          ? `${enseignant.prenom} ${enseignant.nom}` 
+          : enseignant?.name || 'Enseignant',
+      });
+    } catch (notificationError) {
+      console.error('Failed to send evaluation notification:', notificationError);
+      // Don't fail the evaluation if notification fails
+    }
 
     return NextResponse.json({ evaluation });
   } catch (error) {

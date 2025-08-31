@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { sendMail } from '@/lib/sendMail';
+import { notifyReservationCreated } from '@/lib/notifications';
 
 // GET - Get all available disponibilites for candidates
 export async function GET(request: NextRequest) {
@@ -214,6 +215,31 @@ export async function POST(request: NextRequest) {
       });
     } catch (e) {
       console.error('Erreur lors de l\'envoi de l\'email de notification:', e);
+    }
+
+    // Notify admins about new reservation
+    try {
+      const candidat = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { name: true, prenom: true, nom: true }
+      });
+
+      await notifyReservationCreated({
+        id: reservation.id,
+        candidatId: user.id,
+        enseignantId: chosenDispo.id_Enseignant,
+        candidatName: candidat?.prenom && candidat?.nom 
+          ? `${candidat.prenom} ${candidat.nom}` 
+          : candidat?.name || 'Candidat',
+        enseignantName: reservation.disponibilite.enseignant.prenom && reservation.disponibilite.enseignant.nom 
+          ? `${reservation.disponibilite.enseignant.prenom} ${reservation.disponibilite.enseignant.nom}` 
+          : reservation.disponibilite.enseignant.name || 'Enseignant',
+        dateDebut: reservation.disponibilite.dateDebut,
+        dateFin: reservation.disponibilite.dateFin,
+      });
+    } catch (notificationError) {
+      console.error('Failed to send reservation notification:', notificationError);
+      // Don't fail the reservation if notification fails
     }
 
     return NextResponse.json(

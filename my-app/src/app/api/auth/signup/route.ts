@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { notifyNewCandidateSignup } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,6 +75,20 @@ export async function POST(request: NextRequest) {
         role: "CANDIDAT", // Default role for signup
       },
     });
+
+    // Notify admins about new candidate signup
+    try {
+      await notifyNewCandidateSignup({
+        id: user.id,
+        name: user.name || '',
+        email: user.email,
+        prenom: user.prenom,
+        nom: user.nom,
+      });
+    } catch (notificationError) {
+      console.error('Failed to send notification:', notificationError);
+      // Don't fail the signup if notification fails
+    }
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;

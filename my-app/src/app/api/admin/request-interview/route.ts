@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { notifyInterviewRequest } from "@/lib/notifications";
 
 export async function POST(request: NextRequest) {
   try {
@@ -115,6 +116,26 @@ export async function POST(request: NextRequest) {
         link: "/etudiant/dashboard",
       }
     });
+
+    // Notify admins about interview request (excluding the admin who created it)
+    try {
+      await notifyInterviewRequest({
+        id: interviewRequest.id,
+        candidatId: candidateId,
+        enseignantId: enseignantId,
+        candidatName: candidate.prenom && candidate.nom 
+          ? `${candidate.prenom} ${candidate.nom}` 
+          : candidate.name || 'Candidat',
+        enseignantName: enseignant.prenom && enseignant.nom 
+          ? `${enseignant.prenom} ${enseignant.nom}` 
+          : enseignant.name || 'Enseignant',
+        dateDebut: new Date(), // Will be updated when teacher sets availability
+        dateFin: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+      });
+    } catch (notificationError) {
+      console.error('Failed to send interview request notification:', notificationError);
+      // Don't fail the request if notification fails
+    }
 
     console.log("Interview request completed successfully");
     return NextResponse.json({ 

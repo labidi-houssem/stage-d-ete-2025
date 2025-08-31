@@ -27,13 +27,15 @@ export default function ForgotPasswordPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Erreur lors de l\'envoi de l\'email de réinitialisation');
+        setMessage(result.error || 'Erreur lors de l\'envoi de l\'email de réinitialisation');
+        setIsSuccess(false);
+        return;
       }
 
       setMessage(result.message);
       setIsSuccess(true);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Erreur lors de l\'envoi de l\'email de réinitialisation');
+      setMessage('Erreur de connexion. Veuillez réessayer plus tard.');
       setIsSuccess(false);
     } finally {
       setLoading(false);

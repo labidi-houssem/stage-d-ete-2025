@@ -20,10 +20,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      // For security, don't reveal if email exists or not
       return NextResponse.json(
-        { message: 'Si cette adresse email existe dans notre système, vous recevrez un email de réinitialisation.' },
-        { status: 200 }
+        { error: 'Aucun compte trouvé avec cette adresse email.' },
+        { status: 404 }
       );
     }
 
@@ -111,7 +110,7 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json(
-        { message: 'Si cette adresse email existe dans notre système, vous recevrez un email de réinitialisation.' },
+        { message: 'Email de réinitialisation envoyé avec succès ! Vérifiez votre boîte de réception.' },
         { status: 200 }
       );
     } catch (emailError) {
