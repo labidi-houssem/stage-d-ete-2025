@@ -1,9 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function CreateUsersPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,6 +16,21 @@ export default function CreateUsersPage() {
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Authentication check
+  useEffect(() => {
+    if (status === "loading") return;
+    
+    if (!session) {
+      router.push("/Auth/Signin");
+      return;
+    }
+    
+    if ((session.user as any)?.role !== "ADMIN") {
+      router.push("/welcome");
+      return;
+    }
+  }, [session, status, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -57,6 +74,23 @@ export default function CreateUsersPage() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Vérification de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!session || (session.user as any)?.role !== "ADMIN") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

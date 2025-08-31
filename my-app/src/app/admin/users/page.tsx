@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface User {
   id: string;
@@ -23,6 +24,7 @@ const roleOptions = [
 ];
 
 export default function UsersPage() {
+  const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -30,9 +32,22 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("");
   const router = useRouter();
 
+  // Authentication check
   useEffect(() => {
+    if (status === "loading") return;
+    
+    if (!session) {
+      router.push("/Auth/Signin");
+      return;
+    }
+    
+    if ((session.user as any)?.role !== "ADMIN") {
+      router.push("/welcome");
+      return;
+    }
+
     fetchUsers();
-  }, []);
+  }, [session, status, router]);
 
   const fetchUsers = async () => {
     try {
@@ -118,6 +133,23 @@ export default function UsersPage() {
     const matchesRole = roleFilter ? user.role === roleFilter : true;
     return matchesSearch && matchesRole;
   });
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Vérification de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!session || (session.user as any)?.role !== "ADMIN") {
+    return null;
+  }
 
   if (loading) {
     return (
