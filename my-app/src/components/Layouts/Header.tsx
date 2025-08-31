@@ -6,7 +6,11 @@ import { BellIcon } from "@/assets/icons";
 import { useEffect, useRef, useState } from "react";
 import { Calendar } from "../Layouts/sidebar/icons";
 
-export default function Header() {
+interface HeaderProps {
+  onToggleSidebar?: () => void;
+}
+
+export default function Header({ onToggleSidebar }: HeaderProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const user = session?.user as any;
@@ -107,31 +111,41 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full h-20 bg-gradient-to-r from-white via-gray-50 to-white shadow-lg border-b border-gray-100 flex items-center justify-between px-8 z-10 relative">
+    <header className="w-full h-16 sm:h-20 bg-gradient-to-r from-white via-gray-50 to-white shadow-lg border-b border-gray-100 flex items-center justify-between px-3 sm:px-6 z-10 relative">
       {/* Left side - Logo and Brand */}
-      <div className="flex items-center gap-6">
-        
+      <div className="flex items-center gap-3 sm:gap-6">
+        {/* Mobile menu button - only visible on mobile */}
+        <button 
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
+          onClick={onToggleSidebar}
+        >
+          <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
 
       {/* Right side - User info and actions */}
-      <div className="flex items-center gap-6">
-        {/* Welcome message */}
-        <div className="hidden lg:block text-right">
-          <p className="text-sm text-gray-600">Bienvenue !</p>
-          <p className="font-semibold text-gray-800">{user?.name || user?.email}</p>
+      <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
+        {/* Welcome message - responsive visibility */}
+        <div className="hidden md:block text-right">
+          <p className="text-xs sm:text-sm text-gray-600">Bienvenue !</p>
+          <p className="text-sm sm:text-base font-semibold text-gray-800 truncate max-w-32 sm:max-w-none">
+            {user?.name || user?.email}
+          </p>
           <p className="text-xs text-red-600 font-medium">{getRoleDisplayName(user?.role)}</p>
         </div>
 
         {/* Notification bell */}
         <div className="relative" ref={dropdownRef}>
           <button
-            className="relative p-3 rounded-xl bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+            className="relative p-2 sm:p-3 rounded-xl bg-gradient-to-r from-red-50 to-red-100 hover:from-red-100 hover:to-red-200 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 touch-target"
             title="Notifications"
             onClick={() => setShowDropdown((v) => !v)}
           >
-            <BellIcon className="w-6 h-6 text-red-600" />
+            <BellIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full text-xs w-6 h-6 flex items-center justify-center border-2 border-white shadow-lg font-bold animate-pulse">
+              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full text-xs w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center border-2 border-white shadow-lg font-bold animate-pulse">
                 {unreadCount}
               </span>
             )}
@@ -139,7 +153,7 @@ export default function Header() {
 
           {/* Notifications dropdown */}
           {showDropdown && (
-            <div className="absolute right-0 mt-3 w-96 bg-white rounded-2xl shadow-2xl z-50 max-h-96 overflow-y-auto border border-gray-100 transform transition-all duration-200">
+            <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl z-50 max-h-96 overflow-y-auto border border-gray-100 transform transition-all duration-200">
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
@@ -207,20 +221,20 @@ export default function Header() {
         {/* User profile */}
         <button
           onClick={() => router.push(profileLink)}
-          className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 transition-all duration-200 group"
+          className="flex items-center gap-2 sm:gap-3 p-1 sm:p-2 rounded-xl hover:bg-gray-100 transition-all duration-200 group touch-target"
           title="Voir le profil"
         >
           {user?.image ? (
             <Image
               src={user.image}
               alt="Avatar"
-              width={48}
-              height={48}
-              className="rounded-full border-3 border-gray-200 shadow-lg group-hover:border-red-300 transition-all duration-200"
+              width={40}
+              height={40}
+              className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full border-2 sm:border-3 border-gray-200 shadow-lg group-hover:border-red-300 transition-all duration-200"
             />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center border-3 border-gray-200 shadow-lg group-hover:border-red-300 transition-all duration-200">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center border-2 sm:border-3 border-gray-200 shadow-lg group-hover:border-red-300 transition-all duration-200">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
