@@ -136,7 +136,7 @@ export default function SigninWithPassword() {
         </label>
 
         <Link
-          href="/auth/forgot-password"
+          href="/Auth/ForgotPassword"
           className="text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
         >
           Mot de passe oublié ?

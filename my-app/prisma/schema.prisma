@@ -30,6 +30,8 @@ model User {
   specialite                   String?
   github                       String?
   role                         UserRole              @default(CANDIDAT)
+  resetToken                   String?
+  resetTokenExpiry             DateTime?
   disponibilites               Disponibilite[]       @relation("EnseignantDisponibilites")
   evaluationsAsCandidat        InterviewEvaluation[] @relation("EvaluationCandidat")
   evaluationsAsEnseignant      InterviewEvaluation[] @relation("EvaluationEnseignant")
