@@ -113,49 +113,24 @@ export default function LandingPage() {
             </div>
 
             {/* Right Visual */}
-            <div className="relative mt-8 lg:mt-0">
-              <div className="relative z-10 bg-white/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 p-4 sm:p-6 lg:p-8">
-                <div className="space-y-4 sm:space-y-6">
-                  {/* Mock Dashboard */}
-                  <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-red-600 to-rose-600 rounded-lg"></div>
-                    <span className="font-semibold text-gray-800 text-sm sm:text-base">Tableau de bord</span>
-                  </div>
+            <div className="flex items-center justify-center">
+              <Image
+                src="/images/LandingPage.png"
+                alt="LandingPage Preview"
+                width={1600}  // increase the width
+                height={1000} // increase the height
+                className="w-full h-auto rounded-xl" // remove max-w-md
+              />
+            </div>
 
-                  <div className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-xs sm:text-sm font-medium">Entretien confirmé</span>
-                      </div>
-                      <span className="text-xs text-gray-500">14:30</span>
-                    </div>
 
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                        <span className="text-xs sm:text-sm font-medium">En attente</span>
-                      </div>
-                      <span className="text-xs text-gray-500">16:00</span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-xs sm:text-sm font-medium">Nouveau candidat</span>
-                      </div>
-                      <span className="text-xs text-gray-500">Maintenant</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
               {/* Floating Elements */}
               <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 bg-gradient-to-r from-red-400 to-rose-400 rounded-xl sm:rounded-2xl opacity-20 animate-bounce"></div>
               <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-gradient-to-r from-pink-400 to-red-400 rounded-lg sm:rounded-xl opacity-20 animate-pulse"></div>
             </div>
           </div>
-        </div>
+        
       </section>
 
       {/* Features Section */}

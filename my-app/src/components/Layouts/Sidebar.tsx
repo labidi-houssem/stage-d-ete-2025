@@ -28,7 +28,7 @@ export default function Sidebar({ links, currentPath, horizontal = false, dashbo
 
   if (horizontal) {
     return (
-      <nav className="w-full bg-white shadow-lg flex items-center px-6 h-16 border-b border-gray-100 z-20 relative">
+      <nav className="w-full bg-white shadow-lg flex items-center px-6 h-16 border-b border-gray-100 z-5 relative">
         {/* Mobile hamburger */}
         <button
           className="lg:hidden p-2 mr-4 rounded-lg hover:bg-gray-100 transition-colors"

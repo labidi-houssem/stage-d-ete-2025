@@ -130,7 +130,7 @@ export default function SignUp() {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-gray-600">
-            © 2024 Plateforme d'Entretiens. Tous droits réservés.
+            © 2025 Plateforme d'Entretiens. Tous droits réservés.
           </p>
         </div>
       </div>

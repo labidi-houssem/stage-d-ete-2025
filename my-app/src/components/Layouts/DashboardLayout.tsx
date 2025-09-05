@@ -71,7 +71,7 @@ export default function DashboardLayout({ links, children }: DashboardLayoutProp
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Desktop Sidebar: only visible on large screens */}
-      <div className="hidden lg:block w-59 h-full shadow-2xl relative z-10">
+      <div className="hidden lg:block w-65 h-full shadow-2xl relative z-10">
         <DesktopSidebar links={links} />
       </div>
       
