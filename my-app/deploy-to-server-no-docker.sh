@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Production deployment script for Next.js application
-# Usage: ./deploy-to-server.sh
+# Production deployment script for Next.js application (without local Docker)
+# Usage: ./deploy-to-server-no-docker.sh
 
 set -e
 
@@ -19,12 +19,6 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-# Check if Docker is installed locally
-if ! command -v docker &> /dev/null; then
-    echo "❌ Docker is not installed locally. Please install Docker first."
-    exit 1
-fi
-
 # Load environment variables
 echo "📄 Loading environment variables..."
 export $(cat .env | grep -v '^#' | xargs)
@@ -38,6 +32,7 @@ tar -czf deployment.tar.gz \
     --exclude=deployment.tar.gz \
     --exclude=.env.local \
     --exclude=.env.development \
+    --exclude=env.prod \
     .
 
 echo "📤 Uploading files to server..."
@@ -58,7 +53,7 @@ ssh ${SERVER_USER}@${SERVER_HOST} << EOF
     docker-compose -f docker-compose.prod.yml up -d
     
     echo "⏳ Waiting for application to be ready..."
-    sleep 15
+    sleep 20
     
     echo "🔍 Checking application health..."
     if curl -f http://localhost/health > /dev/null 2>&1; then

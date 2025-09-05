@@ -114,6 +114,7 @@ export default function LandingPage() {
 
             {/* Right Visual */}
             <div className="flex items-center justify-center">
+
               <Image
                 src="/images/LandingPage.png"
                 alt="LandingPage Preview"
@@ -121,6 +122,9 @@ export default function LandingPage() {
                 height={1000} // increase the height
                 className="w-full h-auto rounded-xl" // remove max-w-md
               />
+
+             
+
             </div>
 
 
