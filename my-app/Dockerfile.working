@@ -28,6 +28,9 @@ RUN echo 'module.exports = { content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"], theme:
 # Create a simple postcss config
 RUN echo 'module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }' > postcss.config.js
 
+# Fix the globals.css to use proper Tailwind imports
+RUN echo '@import "tailwindcss/base"; @import "tailwindcss/components"; @import "tailwindcss/utilities";' > src/app/globals.css
+
 # Generate Prisma client
 RUN npx prisma generate
 
