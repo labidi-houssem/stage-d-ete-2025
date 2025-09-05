@@ -82,8 +82,8 @@ export async function POST(request: NextRequest) {
         id: user.id,
         name: user.name || '',
         email: user.email,
-        prenom: user.prenom,
-        nom: user.nom,
+        prenom: user.prenom || '',
+        nom: user.nom || '',
       });
     } catch (notificationError) {
       console.error('Failed to send notification:', notificationError);

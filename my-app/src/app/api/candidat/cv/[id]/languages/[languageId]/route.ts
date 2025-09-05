@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update language
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; languageId: string } }
+  { params }: { params: Promise<{ id: string; languageId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -21,7 +22,7 @@ export async function PUT(
     const { name, level } = body;
 
     const language = await prisma.cvLanguage.update({
-      where: { id: params.languageId },
+      where: { id: resolvedParams.languageId },
       data: {
         name,
         level: level || "Intermediate"
@@ -41,10 +42,11 @@ export async function PUT(
 // DELETE - Delete language
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; languageId: string } }
+  { params }: { params: Promise<{ id: string; languageId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -53,7 +55,7 @@ export async function DELETE(
     }
 
     await prisma.cvLanguage.delete({
-      where: { id: params.languageId }
+      where: { id: resolvedParams.languageId }
     });
 
     return NextResponse.json({ success: true });

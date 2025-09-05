@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // GET - Get specific CV by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -19,7 +20,7 @@ export async function GET(
 
     const cv = await prisma.cv.findFirst({
       where: {
-        id: params.id,
+        id: resolvedParams.id,
         candidatId: session.user.id
       },
       include: {
@@ -53,10 +54,11 @@ export async function GET(
 // PUT - Update CV basic info
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -69,7 +71,7 @@ export async function PUT(
 
     const cv = await prisma.cv.updateMany({
       where: { 
-        id: params.id,
+        id: resolvedParams.id,
         candidatId: session.user.id 
       },
       data: {
@@ -99,10 +101,11 @@ export async function PUT(
 // DELETE - Delete CV
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -112,7 +115,7 @@ export async function DELETE(
 
     const cv = await prisma.cv.deleteMany({
       where: { 
-        id: params.id,
+        id: resolvedParams.id,
         candidatId: session.user.id 
       }
     });

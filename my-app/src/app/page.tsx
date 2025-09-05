@@ -22,19 +22,21 @@ export default function LandingPage() {
               </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-              <Link
-                href="/Auth/Signin"
-                className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-600 hover:text-red-600 font-medium transition-colors touch-target"
-              >
-                <span className="hidden sm:inline">Se connecter</span>
-                <span className="sm:hidden">Connexion</span>
+              <Link href="/Auth/Signin">
+                <button
+                  className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-600 hover:text-red-600 font-medium transition-colors touch-target"
+                >
+                  <span className="hidden sm:inline">Se connecter</span>
+                  <span className="sm:hidden">Connexion</span>
+                </button>
               </Link>
-              <Link
-                href="/Auth/Signup"
-                className="px-4 sm:px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base touch-target"
-              >
-                <span className="hidden sm:inline">S'inscrire</span>
-                <span className="sm:hidden">Inscription</span>
+              <Link href="/Auth/Signup">
+                <button
+                  className="px-4 sm:px-6 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base touch-target"
+                >
+                  <span className="hidden sm:inline">S'inscrire</span>
+                  <span className="sm:hidden">Inscription</span>
+                </button>
               </Link>
             </div>
           </div>
@@ -81,17 +83,19 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-                <Link
-                  href="/Auth/Signup"
-                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold text-base sm:text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 touch-target"
-                >
-                  Commencer gratuitement
+                <Link href="/Auth/Signup">
+                  <button
+                    className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl hover:from-red-700 hover:to-rose-700 font-semibold text-base sm:text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 touch-target"
+                  >
+                    Commencer gratuitement
+                  </button>
                 </Link>
-                <Link
-                  href="/Auth/Signin"
-                  className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-200 text-gray-700 rounded-xl hover:border-red-300 hover:text-red-600 font-semibold text-base sm:text-lg transition-all duration-200 touch-target"
-                >
-                  Se connecter
+                <Link href="/Auth/Signin">
+                  <button
+                    className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-200 text-gray-700 rounded-xl hover:border-red-300 hover:text-red-600 font-semibold text-base sm:text-lg transition-all duration-200 touch-target"
+                  >
+                    Se connecter
+                  </button>
                 </Link>
               </div>
 
@@ -243,17 +247,19 @@ export default function LandingPage() {
             1 ingénieur sur 4 formé en Tunisie est diplômé d'ESPRIT.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <Link
-              href="/Auth/Signup"
-              className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-red-600 rounded-xl hover:bg-gray-50 font-semibold text-base sm:text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 touch-target"
-            >
-              Créer un compte
+            <Link href="/Auth/Signup">
+              <button
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-red-600 rounded-xl hover:bg-gray-50 font-semibold text-base sm:text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 touch-target"
+              >
+                Créer un compte
+              </button>
             </Link>
-            <Link
-              href="/Auth/Signin"
-              className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-white rounded-xl hover:bg-white hover:text-red-600 font-semibold text-base sm:text-lg transition-all duration-200 touch-target"
-            >
-              Se connecter
+            <Link href="/Auth/Signin">
+              <button
+                className="px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-white rounded-xl hover:bg-white hover:text-red-600 font-semibold text-base sm:text-lg transition-all duration-200 touch-target"
+              >
+                Se connecter
+              </button>
             </Link>
           </div>
         </div>
@@ -285,10 +291,10 @@ export default function LandingPage() {
             <div>
               <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Liens rapides</h3>
               <ul className="space-y-2 text-gray-400 text-sm sm:text-base">
-                <li><Link href="/Auth/Signin" className="hover:text-white transition-colors touch-target">Se connecter</Link></li>
-                <li><Link href="/Auth/Signup" className="hover:text-white transition-colors touch-target">S'inscrire</Link></li>
-                <li><Link href="/about" className="hover:text-white transition-colors touch-target">À propos</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors touch-target">Contact</Link></li>
+                <li><span className="cursor-not-allowed opacity-60">Se connecter</span></li>
+                <li><span className="cursor-not-allowed opacity-60">S'inscrire</span></li>
+                <li><span className="cursor-not-allowed opacity-60">À propos</span></li>
+                <li><span className="cursor-not-allowed opacity-60">Contact</span></li>
               </ul>
             </div>
 
@@ -296,10 +302,10 @@ export default function LandingPage() {
             <div>
               <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Légal</h3>
               <ul className="space-y-2 text-gray-400 text-sm sm:text-base">
-                <li><Link href="/privacy" className="hover:text-white transition-colors touch-target">Confidentialité</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors touch-target">Conditions</Link></li>
-                <li><Link href="/cookies" className="hover:text-white transition-colors touch-target">Cookies</Link></li>
-                <li><Link href="/support" className="hover:text-white transition-colors touch-target">Support</Link></li>
+                <li><span className="cursor-not-allowed opacity-60">Confidentialité</span></li>
+                <li><span className="cursor-not-allowed opacity-60">Conditions</span></li>
+                <li><span className="cursor-not-allowed opacity-60">Cookies</span></li>
+                <li><span className="cursor-not-allowed opacity-60">Support</span></li>
               </ul>
             </div>
           </div>

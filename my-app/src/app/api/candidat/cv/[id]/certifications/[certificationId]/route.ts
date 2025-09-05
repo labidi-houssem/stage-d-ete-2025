@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update certification
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; certificationId: string } }
+  { params }: { params: Promise<{ id: string; certificationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,6 +17,7 @@ export async function PUT(
       );
     }
 
+    const resolvedParams = await params;
     const body = await request.json();
     const {
       name,
@@ -28,7 +29,7 @@ export async function PUT(
     } = body;
 
     const certification = await prisma.cvCertification.update({
-      where: { id: params.certificationId },
+      where: { id: resolvedParams.certificationId },
       data: {
         name,
         issuer,
@@ -52,7 +53,7 @@ export async function PUT(
 // DELETE - Delete certification
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; certificationId: string } }
+  { params }: { params: Promise<{ id: string; certificationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -63,8 +64,9 @@ export async function DELETE(
       );
     }
 
+    const resolvedParams = await params;
     await prisma.cvCertification.delete({
-      where: { id: params.certificationId }
+      where: { id: resolvedParams.certificationId }
     });
 
     return NextResponse.json({ success: true });

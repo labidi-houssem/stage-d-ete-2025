@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // GET - Get candidate's CV (for teachers during interviews)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { candidateId: string } }
+  { params }: { params: Promise<{ candidateId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || !["ENSEIGNANT", "ADMIN"].includes(session.user?.role)) {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -23,7 +24,7 @@ export async function GET(
 
     // Get candidate's CV
     const cv = await prisma.cv.findUnique({
-      where: { candidatId: params.candidateId },
+      where: { candidatId: resolvedParams.candidateId },
       include: {
         personalInfo: true,
         education: true,
@@ -44,7 +45,7 @@ export async function GET(
 
     // Get candidate basic info
     const candidate = await prisma.user.findUnique({
-      where: { id: params.candidateId },
+      where: { id: resolvedParams.candidateId },
       select: {
         id: true,
         nom: true,

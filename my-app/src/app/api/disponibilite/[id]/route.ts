@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update disponibilite
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     
     if (!session || session.user?.role !== "ENSEIGNANT") {
       return NextResponse.json(
@@ -24,7 +25,7 @@ export async function PUT(
     // Check if disponibilite exists and belongs to the teacher
     const existingDisponibilite = await prisma.disponibilite.findFirst({
       where: {
-        id: params.id,
+        id: resolvedParams.id,
         id_Enseignant: session.user.id
       }
     });
@@ -37,7 +38,7 @@ export async function PUT(
     }
 
     const disponibilite = await prisma.disponibilite.update({
-      where: { id: params.id },
+      where: { id: resolvedParams.id },
       data: {
         dateDebut: new Date(dateDebut),
         dateFin: new Date(dateFin)
@@ -62,10 +63,11 @@ export async function PUT(
 // DELETE - Delete disponibilite
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     
     if (!session || session.user?.role !== "ENSEIGNANT") {
       return NextResponse.json(
@@ -77,7 +79,7 @@ export async function DELETE(
     // Check if disponibilite exists and belongs to the teacher
     const existingDisponibilite = await prisma.disponibilite.findFirst({
       where: {
-        id: params.id,
+        id: resolvedParams.id,
         id_Enseignant: session.user.id
       },
       include: {
@@ -101,7 +103,7 @@ export async function DELETE(
     }
 
     await prisma.disponibilite.delete({
-      where: { id: params.id }
+      where: { id: resolvedParams.id }
     });
 
     return NextResponse.json(

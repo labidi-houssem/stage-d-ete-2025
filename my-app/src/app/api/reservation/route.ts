@@ -9,6 +9,7 @@ import { notifyReservationCreated } from '@/lib/notifications';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     
     if (!session) {
       return NextResponse.json(
@@ -89,6 +90,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     const user = session?.user as any; // Fix typing for user
     if (!session || user?.role !== "CANDIDAT") {
       return NextResponse.json(
@@ -260,10 +262,11 @@ export async function POST(request: NextRequest) {
 }
 
 // PATCH - Update reservation (for status TERMINEE, enseignant can set result)
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     console.log('[PATCH] Handler called');
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session) {
       console.log('[PATCH] No session');
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });

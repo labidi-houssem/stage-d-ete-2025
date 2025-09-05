@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update skill
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; skillId: string } }
+  { params }: { params: Promise<{ id: string; skillId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -21,7 +22,7 @@ export async function PUT(
     const { name, level, category } = body;
 
     const skill = await prisma.cvSkill.update({
-      where: { id: params.skillId },
+      where: { id: resolvedParams.skillId },
       data: {
         name,
         level: level || 3,
@@ -42,10 +43,11 @@ export async function PUT(
 // DELETE - Delete skill
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; skillId: string } }
+  { params }: { params: Promise<{ id: string; skillId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -54,7 +56,7 @@ export async function DELETE(
     }
 
     await prisma.cvSkill.delete({
-      where: { id: params.skillId }
+      where: { id: resolvedParams.skillId }
     });
 
     return NextResponse.json({ success: true });

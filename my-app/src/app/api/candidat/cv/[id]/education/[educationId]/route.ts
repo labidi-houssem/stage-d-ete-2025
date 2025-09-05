@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update education entry
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; educationId: string } }
+  { params }: { params: Promise<{ id: string; educationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -20,7 +21,7 @@ export async function PUT(
     // Verify CV belongs to user
     const cv = await prisma.cv.findFirst({
       where: { 
-        id: params.id,
+        id: resolvedParams.id,
         candidatId: session.user.id 
       }
     });
@@ -45,7 +46,7 @@ export async function PUT(
     } = body;
 
     const education = await prisma.cvEducation.update({
-      where: { id: params.educationId },
+      where: { id: resolvedParams.educationId },
       data: {
         institution,
         degree,
@@ -71,10 +72,11 @@ export async function PUT(
 // DELETE - Delete education entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; educationId: string } }
+  { params }: { params: Promise<{ id: string; educationId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -85,7 +87,7 @@ export async function DELETE(
     // Verify CV belongs to user
     const cv = await prisma.cv.findFirst({
       where: { 
-        id: params.id,
+        id: resolvedParams.id,
         candidatId: session.user.id 
       }
     });
@@ -98,7 +100,7 @@ export async function DELETE(
     }
 
     await prisma.cvEducation.delete({
-      where: { id: params.educationId }
+      where: { id: resolvedParams.educationId }
     });
 
     return NextResponse.json({ success: true });

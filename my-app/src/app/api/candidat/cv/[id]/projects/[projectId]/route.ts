@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update project
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; projectId: string } }
+  { params }: { params: Promise<{ id: string; projectId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -29,7 +30,7 @@ export async function PUT(
     } = body;
 
     const project = await prisma.cvProject.update({
-      where: { id: params.projectId },
+      where: { id: resolvedParams.projectId },
       data: {
         name,
         description,
@@ -54,10 +55,11 @@ export async function PUT(
 // DELETE - Delete project
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; projectId: string } }
+  { params }: { params: Promise<{ id: string; projectId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -66,7 +68,7 @@ export async function DELETE(
     }
 
     await prisma.cvProject.delete({
-      where: { id: params.projectId }
+      where: { id: resolvedParams.projectId }
     });
 
     return NextResponse.json({ success: true });

@@ -12,12 +12,12 @@ export default async function StatisticsPage() {
   // Counts
   const candidats = await prisma.user.count({ where: { role: "CANDIDAT" } });
   const enseignants = await prisma.user.count({ where: { role: "ENSEIGNANT" } });
-  const etudiants = await prisma.etudiant.count();
+  const etudiants = await prisma.user.count({ where: { role: "ETUDIANT" } });
   // Reservations by status
-  const statuses = ["EN_ATTENTE", "CONFIRMEE", "ANNULEE", "TERMINEE"];
+  const statuses = ["EN_ATTENTE", "CONFIRMEE", "ANNULEE", "TERMINEE"] as const;
   const reservationsByStatus = Object.fromEntries(
     await Promise.all(
-      statuses.map(async (status) => [status, await prisma.reservation.count({ where: { status } })])
+      statuses.map(async (status) => [status, await prisma.reservation.count({ where: { status: status as any } })])
     )
   );
   // Top 5 enseignants by number of interviews

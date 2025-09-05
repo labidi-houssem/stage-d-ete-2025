@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update personal information
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -20,7 +21,7 @@ export async function PUT(
     // Verify CV belongs to user
     const cv = await prisma.cv.findFirst({
       where: {
-        id: params.id,
+        id: resolvedParams.id,
         candidatId: session.user.id
       }
     });
@@ -53,7 +54,7 @@ export async function PUT(
 
     // Upsert personal info
     const personalInfo = await prisma.cvPersonalInfo.upsert({
-      where: { cvId: params.id },
+      where: { cvId: resolvedParams.id },
       update: {
         firstName,
         lastName,
@@ -72,7 +73,7 @@ export async function PUT(
         github
       },
       create: {
-        cvId: params.id,
+        cvId: resolvedParams.id,
         firstName,
         lastName,
         email,

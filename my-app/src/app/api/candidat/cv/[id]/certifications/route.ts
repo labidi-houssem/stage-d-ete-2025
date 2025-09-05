@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 // POST - Add certification
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,9 +17,10 @@ export async function POST(
       );
     }
 
+    const resolvedParams = await params;
     const cv = await prisma.cv.findFirst({
       where: { 
-        id: params.id,
+        id: resolvedParams.id,
         candidatId: session.user.id 
       }
     });
@@ -43,7 +44,7 @@ export async function POST(
 
     const certification = await prisma.cvCertification.create({
       data: {
-        cvId: params.id,
+        cvId: resolvedParams.id,
         name,
         issuer,
         issueDate: issueDate ? new Date(issueDate) : null,

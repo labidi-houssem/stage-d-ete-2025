@@ -31,11 +31,62 @@ RUN echo 'module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }' >
 # Fix the globals.css to use proper Tailwind imports
 RUN echo '@import "tailwindcss/base"; @import "tailwindcss/components"; @import "tailwindcss/utilities";' > src/app/globals.css
 
-# Remove problematic API routes and pages that have TypeScript errors
-RUN rm -rf src/app/api/admin src/app/api/candidat src/app/api/enseignant src/app/api/etudiant src/app/api/disponibilite src/app/api/notifications src/app/api/reservation src/app/api/auth
-RUN rm -rf src/app/admin src/app/candidat src/app/enseignant src/app/etudiant src/app/calendar
-RUN rm -rf src/app/Auth
-RUN rm -f src/lib/auth.ts src/lib/googleMeet.ts src/lib/notifications.ts src/lib/sendMail.ts
+# Keep all routes and pages - we'll fix the TypeScript errors instead
+# RUN rm -rf src/app/api/candidat/cv/[id]/certifications
+# RUN rm -rf src/app/api/candidat/cv/[id]/education
+# RUN rm -rf src/app/api/candidat/cv/[id]/experience
+# RUN rm -rf src/app/api/candidat/cv/[id]/languages
+# RUN rm -rf src/app/api/candidat/cv/[id]/projects
+# RUN rm -rf src/app/api/candidat/cv/[id]/skills
+# RUN rm -rf src/app/api/candidat/cv/[id]/personal
+# RUN rm -rf src/app/api/candidat/cv/[id]/route.ts
+# RUN rm -rf src/app/api/candidat/cv/route.ts
+# RUN rm -rf src/app/api/candidat/interviews
+# RUN rm -rf src/app/api/candidat/profile
+# RUN rm -rf src/app/api/candidat/upload-image
+# RUN rm -rf src/app/api/enseignant/candidate-cv
+# RUN rm -rf src/app/api/enseignant/candidates-with-cv
+# RUN rm -rf src/app/api/enseignant/disponibilites
+# RUN rm -rf src/app/api/enseignant/evaluation
+# RUN rm -rf src/app/api/enseignant/interview-requests
+# RUN rm -rf src/app/api/etudiant/cv
+# RUN rm -rf src/app/api/etudiant/profile
+# RUN rm -rf src/app/api/disponibilite
+# RUN rm -rf src/app/api/notifications
+# RUN rm -rf src/app/api/reservation
+# RUN rm -rf src/app/api/auth
+# RUN rm -rf src/app/api/admin
+# RUN rm -rf src/app/api/Users
+# RUN rm -rf src/app/api/test
+# RUN rm -rf src/app/api/health
+# RUN rm -rf src/app/api/candidat
+# RUN rm -rf src/app/api/enseignant
+# RUN rm -rf src/app/api/etudiant
+# RUN rm -rf src/app/api/disponibilite
+# RUN rm -rf src/app/api/notifications
+# RUN rm -rf src/app/api/reservation
+# RUN rm -rf src/app/api/auth
+# RUN rm -rf src/app/api/admin
+# RUN rm -rf src/app/api/Users
+# RUN rm -rf src/app/api/test
+# RUN rm -rf src/app/api/health
+
+# Keep all pages
+# RUN rm -rf src/app/admin
+# RUN rm -rf src/app/candidat
+# RUN rm -rf src/app/enseignant
+# RUN rm -rf src/app/etudiant
+# RUN rm -rf src/app/calendar
+# RUN rm -rf src/app/interviews
+# RUN rm -rf src/app/Auth
+# RUN rm -rf src/app/welcome
+
+# Keep all lib files
+# RUN rm -f src/lib/auth.ts
+# RUN rm -f src/lib/googleMeet.ts
+# RUN rm -f src/lib/notifications.ts
+# RUN rm -f src/lib/sendMail.ts
+# RUN rm -f src/middleware.ts
 
 # Generate Prisma client
 RUN npx prisma generate
@@ -46,6 +97,9 @@ RUN npm run build
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Copy the standalone build files properly
+RUN cp -r .next/standalone/* ./
 
 # Change ownership of the app directory
 RUN chown -R nextjs:nodejs /app
@@ -59,4 +113,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "server.js"]

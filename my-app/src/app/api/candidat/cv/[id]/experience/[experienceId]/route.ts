@@ -6,10 +6,11 @@ import { authOptions } from "@/lib/auth";
 // PUT - Update experience entry
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; experienceId: string } }
+  { params }: { params: Promise<{ id: string; experienceId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -30,7 +31,7 @@ export async function PUT(
     } = body;
 
     const experience = await prisma.cvExperience.update({
-      where: { id: params.experienceId },
+      where: { id: resolvedParams.experienceId },
       data: {
         company,
         position,
@@ -56,10 +57,11 @@ export async function PUT(
 // DELETE - Delete experience entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; experienceId: string } }
+  { params }: { params: Promise<{ id: string; experienceId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
+    const resolvedParams = await params;
     if (!session || session.user?.role !== "CANDIDAT") {
       return NextResponse.json(
         { error: "Accès non autorisé" },
@@ -68,7 +70,7 @@ export async function DELETE(
     }
 
     await prisma.cvExperience.delete({
-      where: { id: params.experienceId }
+      where: { id: resolvedParams.experienceId }
     });
 
     return NextResponse.json({ success: true });
