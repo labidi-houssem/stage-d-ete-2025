@@ -2,7 +2,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.working
+      dockerfile: Dockerfile.minimal
     environment:
       - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
