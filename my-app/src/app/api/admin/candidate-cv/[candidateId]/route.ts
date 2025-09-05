@@ -6,9 +6,10 @@ import { authOptions } from "@/lib/auth";
 // GET - Get candidate's CV (for admins)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { candidateId: string } }
+  { params }: { params: Promise<{ candidateId: string }> }
 ) {
   try {
+    const { candidateId } = await params;
     const session = await getServerSession(authOptions);
     if (!session || session.user?.role !== "ADMIN") {
       return NextResponse.json(
@@ -19,7 +20,7 @@ export async function GET(
 
     // Admins can view any candidate CV
     const cv = await prisma.cv.findUnique({
-      where: { candidatId: params.candidateId },
+      where: { candidatId: candidateId },
       include: {
         personalInfo: true,
         education: true,
@@ -40,7 +41,7 @@ export async function GET(
 
     // Get candidate basic info
     const candidate = await prisma.user.findUnique({
-      where: { id: params.candidateId },
+      where: { id: candidateId },
       select: {
         id: true,
         nom: true,
