@@ -31,24 +31,6 @@ RUN echo 'module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }' >
 # Replace the globals.css with a simpler version
 RUN echo '@tailwind base; @tailwind components; @tailwind utilities; body { font-family: Arial, Helvetica, sans-serif; }' > src/app/globals.css
 
-# Temporarily remove all problematic dynamic route files and API routes
-RUN find src/app -name "\[*\]" -type d -exec rm -rf {} + 2>/dev/null || true
-RUN find src/app/api -name "\[*\]" -type d -exec rm -rf {} + 2>/dev/null || true
-RUN rm -f src/app/api/notifications/route.ts
-RUN rm -f src/app/api/reservation/route.ts
-RUN rm -rf src/app/api/candidat src/app/api/admin src/app/api/enseignant src/app/api/etudiant src/app/api/disponibilite
-RUN rm -rf src/app/admin src/app/candidat src/app/enseignant src/app/etudiant src/app/calendar
-RUN rm -f src/lib/auth.ts
-RUN rm -f src/lib/googleMeet.ts
-RUN rm -f src/lib/notifications.ts
-RUN rm -rf src/app/api/auth
-RUN rm -f src/lib/sendMail.ts
-RUN rm -f src/app/api/test/route.ts
-RUN rm -rf src/app/Auth
-
-# Generate Prisma client
-RUN npx prisma generate
-
 # Build the application
 RUN npm run build
 

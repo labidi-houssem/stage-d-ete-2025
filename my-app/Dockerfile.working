@@ -16,6 +16,16 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Temporarily disable Tailwind CSS v4 and use v3
+RUN npm uninstall @tailwindcss/postcss tailwindcss
+RUN npm install tailwindcss@^3.4.0 postcss autoprefixer
+
+# Create a simple tailwind config
+RUN echo 'module.exports = { content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"], theme: { extend: {} }, plugins: [] }' > tailwind.config.js
+
+# Create a simple postcss config
+RUN echo 'module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }' > postcss.config.js
+
 # Build the application
 RUN npm run build
 

@@ -35,7 +35,8 @@ interface Candidate {
   createdAt: string;
 }
 
-export default function AdminCandidateCV({ params }: { params: { candidateId: string } }) {
+export default async function AdminCandidateCV({ params }: { params: Promise<{ candidateId: string }> }) {
+  const { candidateId } = await params;
   const { data: session, status } = useSession();
   const router = useRouter();
   const [cv, setCv] = useState<CVData | null>(null);
@@ -49,11 +50,11 @@ export default function AdminCandidateCV({ params }: { params: { candidateId: st
       return;
     }
     fetchCandidateCV();
-  }, [session, status, router, params.candidateId]);
+  }, [session, status, router, candidateId]);
 
   const fetchCandidateCV = async () => {
     try {
-      const response = await fetch(`/api/admin/candidate-cv/${params.candidateId}`);
+      const response = await fetch(`/api/admin/candidate-cv/${candidateId}`);
       if (response.ok) {
         const data = await response.json();
         setCv(data.cv);
