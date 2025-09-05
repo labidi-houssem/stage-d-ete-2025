@@ -16,8 +16,10 @@ COPY . .
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Temporarily disable Tailwind CSS v4 and use v3
+# Remove problematic Tailwind CSS v4 packages
 RUN npm uninstall @tailwindcss/postcss tailwindcss
+
+# Install Tailwind CSS v3
 RUN npm install tailwindcss@^3.4.0 postcss autoprefixer
 
 # Create a simple tailwind config
@@ -25,6 +27,9 @@ RUN echo 'module.exports = { content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"], theme:
 
 # Create a simple postcss config
 RUN echo 'module.exports = { plugins: { tailwindcss: {}, autoprefixer: {} } }' > postcss.config.js
+
+# Generate Prisma client
+RUN npx prisma generate
 
 # Build the application
 RUN npm run build
