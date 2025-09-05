@@ -34,6 +34,8 @@ RUN echo '@import "tailwindcss/base"; @import "tailwindcss/components"; @import 
 # Remove problematic API routes and pages that have TypeScript errors
 RUN rm -rf src/app/api/admin src/app/api/candidat src/app/api/enseignant src/app/api/etudiant src/app/api/disponibilite src/app/api/notifications src/app/api/reservation src/app/api/auth
 RUN rm -rf src/app/admin src/app/candidat src/app/enseignant src/app/etudiant src/app/calendar
+RUN rm -rf src/app/Auth
+RUN rm -f src/lib/auth.ts src/lib/googleMeet.ts src/lib/notifications.ts src/lib/sendMail.ts
 
 # Generate Prisma client
 RUN npx prisma generate
