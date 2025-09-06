@@ -115,7 +115,7 @@ export default function ManageDisponibilite() {
   };
 
   const generateTimeSlots = () => {
-    const slots = [];
+    const slots: { dateDebut: string; dateFin: string }[] = [];
     const { date, startTime, endTime, duration, numberOfSlots } = formData;
     
     if (!date || !startTime || !endTime) return slots;
@@ -205,7 +205,7 @@ export default function ManageDisponibilite() {
   };
 
   const generateBulkTimeSlots = () => {
-    const slots = [];
+    const slots: { dateDebut: string; dateFin: string }[] = [];
     const { startDate, endDate, startTime, endTime, duration, numberOfSlots, daysOfWeek } = bulkData;
     
     if (!startDate || !endDate || !startTime || !endTime) return slots;

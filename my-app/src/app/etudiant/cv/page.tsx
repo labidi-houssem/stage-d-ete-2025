@@ -121,7 +121,7 @@ export default function EtudiantCVPage() {
               github: cv.personalInfo?.github || "",
               website: cv.personalInfo?.website || "",
             },
-            education: cv.education?.map(edu => ({
+            education: cv.education?.map((edu: any) => ({
               ...edu,
               institution: edu.institution || "",
               degree: edu.degree || "",
@@ -131,7 +131,7 @@ export default function EtudiantCVPage() {
               grade: edu.grade || "",
               description: edu.description || "",
             })) || [],
-            experience: cv.experience?.map(exp => ({
+            experience: cv.experience?.map((exp: any) => ({
               ...exp,
               company: exp.company || "",
               position: exp.position || "",
@@ -141,18 +141,18 @@ export default function EtudiantCVPage() {
               description: exp.description || "",
               achievements: exp.achievements || [],
             })) || [],
-            skills: cv.skills?.map(skill => ({
+            skills: cv.skills?.map((skill: any) => ({
               ...skill,
               name: skill.name || "",
               category: skill.category || "",
               level: skill.level || 1,
             })) || [],
-            languages: cv.languages?.map(lang => ({
+            languages: cv.languages?.map((lang: any) => ({
               ...lang,
               name: lang.name || "",
               level: lang.level || "",
             })) || [],
-            projects: cv.projects?.map(project => ({
+            projects: cv.projects?.map((project: any) => ({
               ...project,
               name: project.name || "",
               description: project.description || "",
@@ -162,7 +162,7 @@ export default function EtudiantCVPage() {
               startDate: project.startDate || "",
               endDate: project.endDate || "",
             })) || [],
-            certifications: cv.certifications?.map(cert => ({
+            certifications: cv.certifications?.map((cert: any) => ({
               ...cert,
               name: cert.name || "",
               issuer: cert.issuer || "",

@@ -13,7 +13,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { read } = body;
 
@@ -58,7 +58,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Verify the notification belongs to the current user
     const notification = await prisma.notification.findFirst({

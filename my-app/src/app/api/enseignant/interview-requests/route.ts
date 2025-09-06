@@ -52,7 +52,8 @@ export async function GET(request: NextRequest) {
             }
           },
           include: {
-            evaluation: true
+            evaluation: true,
+            disponibilite: true
           }
         });
 

@@ -63,8 +63,8 @@ export async function createNotification(data: CreateNotificationData) {
         admins.map(admin =>
           sendMail({
             to: admin.email,
-            subject: data.emailSubject,
-            html: data.emailContent
+            subject: data.emailSubject || 'Notification',
+            html: data.emailContent || ''
           }).catch(error => {
             console.error(`Failed to send email to ${admin.email}:`, error);
           })

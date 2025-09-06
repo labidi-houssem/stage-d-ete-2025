@@ -9,7 +9,6 @@ import { notifyReservationCreated } from '@/lib/notifications';
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const resolvedParams = await params;
     
     if (!session) {
       return NextResponse.json(
@@ -90,7 +89,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const resolvedParams = await params;
     const user = session?.user as any; // Fix typing for user
     if (!session || user?.role !== "CANDIDAT") {
       return NextResponse.json(
@@ -271,7 +269,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       console.log('[PATCH] No session');
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
-    const { id } = params;
+    const { id } = resolvedParams;
     const body = await request.json();
     console.log('[PATCH] Request body:', body);
     const { status, result } = body;

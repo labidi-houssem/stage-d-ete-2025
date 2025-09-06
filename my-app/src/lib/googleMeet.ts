@@ -11,7 +11,13 @@ const auth = new JWT({
 
 const calendar = google.calendar({ version: 'v3', auth });
 
-export async function createMeetEvent({ summary, description, start, end, attendees }) {
+export async function createMeetEvent({ summary, description, start, end, attendees }: {
+  summary: string;
+  description: string;
+  start: string;
+  end: string;
+  attendees: { email: string }[];
+}) {
   const event = {
     summary,
     description,
@@ -25,7 +31,7 @@ export async function createMeetEvent({ summary, description, start, end, attend
 
   const response = await calendar.events.insert({
     calendarId: 'primary',
-    resource: event,
+    requestBody: event,
     conferenceDataVersion: 1,
   });
 
